@@ -30,7 +30,6 @@ export default function TaskPage() {
 
   // Dashboard State
   const [activeTab, setActiveTab] = useState<"applied" | "more" | "tasks">("applied");
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [allRoles, setAllRoles] = useState<{title: string, slug: string, description: string}[]>([]);
   const [applyingDomain, setApplyingDomain] = useState<string | null>(null);
@@ -107,14 +106,7 @@ export default function TaskPage() {
       <Navbar showAdmin={false} />
 
       {step === 3 && (
-        <header className="fixed top-16 left-0 w-full z-40 bg-background/80 backdrop-blur-md border-b border-white/5 py-4 px-6 flex justify-between items-center">
-          <button 
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="p-2 rounded-xl bg-white/5 hover:bg-white/10 transition-colors flex items-center gap-2"
-          >
-            {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            <span className="font-bold hidden sm:block">Menu</span>
-          </button>
+        <header className="fixed top-16 left-0 w-full z-40 bg-background/80 backdrop-blur-md border-b border-white/5 py-4 px-6 flex justify-end items-center">
 
           <div className="relative">
             <button 
@@ -290,29 +282,24 @@ export default function TaskPage() {
               className="w-full max-w-5xl flex flex-col md:flex-row gap-8 pt-12"
             >
               {/* Sidebar Menu */}
-              <AnimatePresence>
-                {(isMenuOpen || window.innerWidth >= 768) && (
-                  <motion.div 
-                    initial={{ opacity: 0, x: -50 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -50 }}
-                    className={`${isMenuOpen ? 'block' : 'hidden md:block'} w-full md:w-64 shrink-0 space-y-2`}
-                  >
-                    <button onClick={() => {setActiveTab("applied"); setIsMenuOpen(false);}} className={`w-full flex items-center gap-3 px-4 py-4 rounded-2xl transition-all cursor-pointer ${activeTab === "applied" ? "bg-primary text-primary-foreground font-bold" : "hover:bg-white/5 text-muted-foreground"}`}>
-                      <LayoutList className="w-5 h-5" />
-                      Check Applied Domains
-                    </button>
-                    <button onClick={() => {setActiveTab("more"); setIsMenuOpen(false);}} className={`w-full flex items-center gap-3 px-4 py-4 rounded-2xl transition-all cursor-pointer ${activeTab === "more" ? "bg-primary text-primary-foreground font-bold" : "hover:bg-white/5 text-muted-foreground"}`}>
-                      <PlusCircle className="w-5 h-5" />
-                      Apply For More
-                    </button>
-                    <button onClick={() => {setActiveTab("tasks"); setIsMenuOpen(false);}} className={`w-full flex items-center gap-3 px-4 py-4 rounded-2xl transition-all cursor-pointer ${activeTab === "tasks" ? "bg-primary text-primary-foreground font-bold" : "hover:bg-white/5 text-muted-foreground"}`}>
-                      <ListTodo className="w-5 h-5" />
-                      Complete Your Tasks
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              <motion.div 
+                initial={{ opacity: 0, x: -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="w-full md:w-64 shrink-0 space-y-2"
+              >
+                <button onClick={() => setActiveTab("applied")} className={`w-full flex items-center gap-3 px-4 py-4 rounded-2xl transition-all cursor-pointer ${activeTab === "applied" ? "bg-primary text-primary-foreground font-bold" : "hover:bg-white/5 text-muted-foreground"}`}>
+                  <LayoutList className="w-5 h-5" />
+                  Check Applied Domains
+                </button>
+                <button onClick={() => setActiveTab("more")} className={`w-full flex items-center gap-3 px-4 py-4 rounded-2xl transition-all cursor-pointer ${activeTab === "more" ? "bg-primary text-primary-foreground font-bold" : "hover:bg-white/5 text-muted-foreground"}`}>
+                  <PlusCircle className="w-5 h-5" />
+                  Apply For More
+                </button>
+                <button onClick={() => setActiveTab("tasks")} className={`w-full flex items-center gap-3 px-4 py-4 rounded-2xl transition-all cursor-pointer ${activeTab === "tasks" ? "bg-primary text-primary-foreground font-bold" : "hover:bg-white/5 text-muted-foreground"}`}>
+                  <ListTodo className="w-5 h-5" />
+                  Complete Your Tasks
+                </button>
+              </motion.div>
 
               {/* Main Dashboard Area */}
               <div className="flex-1 glass rounded-3xl p-8 border border-white/5 min-h-[500px] flex flex-col relative overflow-hidden">
