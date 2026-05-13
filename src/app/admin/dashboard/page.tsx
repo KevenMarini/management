@@ -409,7 +409,11 @@ export default function AdminDashboard() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-white/5">
                       <div className="space-y-4">
                         <DetailItem icon={<GraduationCap className="w-4 h-4" />} label="Education" value={`${selectedApplicant.year}, ${selectedApplicant.college || 'N/A'}`} />
-                        <DetailItem icon={<Code2 className="w-4 h-4" />} label="Skills" value={selectedApplicant.skills} />
+                        <DetailItem 
+                          icon={<Code2 className="w-4 h-4" />} 
+                          label={selectedApplicant.domain === "Frontend" || selectedApplicant.domain === "Backend" ? "Programming Languages" : "Unique Skills"} 
+                          value={selectedApplicant.skills || "N/A"} 
+                        />
                         {(currentAdmin === "Keven1" || currentAdmin === "Smitha2") && selectedApplicant.userid && (
                           <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10 space-y-2">
                             <p className="text-[10px] font-black uppercase tracking-widest text-primary">Access Credentials</p>
@@ -421,9 +425,22 @@ export default function AdminDashboard() {
                         )}
                       </div>
                       <div className="space-y-4">
-                        <DetailItem icon={<Info className="w-4 h-4" />} label="Statement of Interest" value={selectedApplicant.interest} />
+                        <DetailItem 
+                          icon={<Info className="w-4 h-4" />} 
+                          label={
+                            selectedApplicant.domain === "Frontend" ? "Website Link" :
+                            selectedApplicant.domain === "Design" ? "Why Take You" :
+                            selectedApplicant.domain === "Management" ? "Why Interested" :
+                            "Statement of Interest"
+                          } 
+                          value={selectedApplicant.interest || "N/A"} 
+                        />
                         {selectedApplicant.experience && (
-                          <DetailItem icon={<Briefcase className="w-4 h-4" />} label="Experience" value={selectedApplicant.experience} />
+                          <DetailItem 
+                            icon={<Briefcase className="w-4 h-4" />} 
+                            label={selectedApplicant.domain === "Frontend" || selectedApplicant.domain === "Backend" ? "Projects" : "Experience"} 
+                            value={selectedApplicant.experience || "N/A"} 
+                          />
                         )}
                       </div>
                     </div>

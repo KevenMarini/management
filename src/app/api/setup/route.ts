@@ -19,6 +19,10 @@ export async function GET() {
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
 
+      ALTER TABLE applicants ADD COLUMN IF NOT EXISTS github_link TEXT;
+      ALTER TABLE applicants ADD COLUMN IF NOT EXISTS website_link TEXT;
+      ALTER TABLE applicants ADD COLUMN IF NOT EXISTS portfolio_link TEXT;
+
       CREATE TABLE IF NOT EXISTS admin_logs (
         id SERIAL PRIMARY KEY,
         admin_username TEXT NOT NULL,
