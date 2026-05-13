@@ -41,7 +41,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDomain, setSelectedDomain] = useState("All Domains");
-  const [view, setView] = useState<"applicants" | "logs" | "announcements">("applicants");
+  const [view, setView] = useState<"applicants" | "logs" | "announcements" | "forms">("applicants");
   const [logCategory, setLogCategory] = useState<"All" | "Sign In" | "Deletions" | "Announcements">("All");
   const [currentAdmin, setCurrentAdmin] = useState<string | null>(null);
   const [announcementLoading, setAnnouncementLoading] = useState(false);
@@ -51,6 +51,15 @@ export default function AdminDashboard() {
     content: "",
     link_text: "",
     link_url: "",
+  });
+  const [rolesList, setRolesList] = useState<any[]>([]);
+  const [roleLoading, setRoleLoading] = useState(false);
+  const [roleForm, setRoleForm] = useState({
+    slug: "",
+    title: "",
+    tag: "Development",
+    description: "",
+    requirements: "",
   });
 
   useEffect(() => {
@@ -62,6 +71,7 @@ export default function AdminDashboard() {
     setCurrentAdmin(admin);
     fetchApplicants();
     fetchAnnouncementsList();
+    fetchRolesList();
     if (admin === "Keven1") {
       fetchLogs();
     }
@@ -76,6 +86,18 @@ export default function AdminDashboard() {
       }
     } catch (error) {
       console.error("Failed to fetch announcements");
+    }
+  };
+
+  const fetchRolesList = async () => {
+    try {
+      const res = await fetch("/api/roles");
+      if (res.ok) {
+        const data = await res.json();
+        setRolesList(data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch roles");
     }
   };
 
@@ -163,7 +185,50 @@ export default function AdminDashboard() {
       toast.error("An error occurred");
     }
   };
+  const handleDeleteRole = async (id: number) => {
+    if (!confirm("Are you sure you want to delete this role form?")) return;
+    try {
+      const res = await fetch(`/api/roles?id=${id}`, { method: "DELETE" });
+      if (res.ok) {
+        toast.success("Role deleted");
+        fetchRolesList();
+        logAction("Delete Role", `Deleted role ID: ${id}`);
+      } else {
+        toast.error("Failed to delete role");
+      }
+    } catch (error) {
+      toast.error("An error occurred");
+    }
+  };
 
+  const handlePostRole = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!roleForm.title || !roleForm.slug || !roleForm.description || !roleForm.requirements || !roleForm.tag) {
+      toast.error("All fields are required");
+      return;
+    }
+    setRoleLoading(true);
+    try {
+      const res = await fetch("/api/roles", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(roleForm),
+      });
+      if (res.ok) {
+        toast.success("Role form created successfully!");
+        setRoleForm({ slug: "", title: "", tag: "Development", description: "", requirements: "" });
+        fetchRolesList();
+        logAction("Create Role", `Created role form: ${roleForm.title}`);
+      } else {
+        const data = await res.json();
+        toast.error(data.error || "Failed to create role form");
+      }
+    } catch (error) {
+      toast.error("An error occurred");
+    } finally {
+      setRoleLoading(false);
+    }
+  };
   const handleLogout = () => {
     sessionStorage.removeItem("admin_logged_in");
     sessionStorage.removeItem("admin_username");
@@ -270,6 +335,12 @@ export default function AdminDashboard() {
                   className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${view === "announcements" ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
                 >
                   Announcements
+                </button>
+                <button
+                  onClick={() => setView("forms")}
+                  className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${view === "forms" ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                >
+                  Manage Forms
                 </button>
               </div>
 
@@ -632,6 +703,106 @@ export default function AdminDashboard() {
                         onClick={() => handleDeleteAnnouncement(ann.id)}
                         className="p-2 text-destructive hover:bg-destructive/20 rounded-lg transition-colors"
                         title="Delete Announcement"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        ) : view === "forms" ? (
+          <div className="glass rounded-2xl p-8 border border-white/5 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-2xl mx-auto">
+            <h2 className="text-2xl font-bold mb-6">Post New Role Form</h2>
+            <form onSubmit={handlePostRole} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Title <span className="text-primary">*</span></label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Web Frontend Development"
+                    className="form-input"
+                    value={roleForm.title}
+                    onChange={(e) => setRoleForm({...roleForm, title: e.target.value})}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">URL Slug <span className="text-primary">*</span></label>
+                  <input
+                    type="text"
+                    placeholder="e.g. frontend"
+                    className="form-input"
+                    value={roleForm.slug}
+                    onChange={(e) => setRoleForm({...roleForm, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '')})}
+                    required
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Tag/Category <span className="text-primary">*</span></label>
+                <select 
+                  className="form-input"
+                  value={roleForm.tag}
+                  onChange={(e) => setRoleForm({...roleForm, tag: e.target.value})}
+                >
+                  <option value="Development">Development</option>
+                  <option value="Creative">Creative</option>
+                  <option value="Leadership">Leadership</option>
+                  <option value="Operations">Operations</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Description <span className="text-primary">*</span></label>
+                <textarea
+                  placeholder="Short description of the role..."
+                  className="form-input min-h-[100px] resize-none"
+                  value={roleForm.description}
+                  onChange={(e) => setRoleForm({...roleForm, description: e.target.value})}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Requirements (One per line) <span className="text-primary">*</span></label>
+                <textarea
+                  placeholder="- Proficiency in HTML5, CSS3...&#10;- Experience with React..."
+                  className="form-input min-h-[150px] resize-none"
+                  value={roleForm.requirements}
+                  onChange={(e) => setRoleForm({...roleForm, requirements: e.target.value})}
+                  required
+                />
+              </div>
+              <div className="pt-4">
+                <button
+                  type="submit"
+                  disabled={roleLoading}
+                  className="btn-primary w-full flex justify-center items-center gap-2"
+                >
+                  {roleLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Publish Form"}
+                </button>
+              </div>
+            </form>
+
+            <div className="mt-12 border-t border-white/10 pt-8">
+              <h3 className="text-xl font-bold mb-4">Active Forms</h3>
+              <div className="space-y-4">
+                {rolesList.length === 0 ? (
+                  <p className="text-muted-foreground text-sm">No forms active.</p>
+                ) : (
+                  rolesList.map((role) => (
+                    <div key={role.id} className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/5">
+                      <div>
+                        <h4 className="font-bold">{role.title}</h4>
+                        <div className="flex gap-2 mt-1">
+                          <span className="text-[10px] uppercase bg-primary/20 text-primary px-2 py-0.5 rounded">{role.tag}</span>
+                          <span className="text-xs text-muted-foreground">/apply/{role.slug}</span>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => handleDeleteRole(role.id)}
+                        className="p-2 text-destructive hover:bg-destructive/20 rounded-lg transition-colors"
+                        title="Delete Role"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>

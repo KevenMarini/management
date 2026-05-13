@@ -4,7 +4,23 @@ import Link from "next/link";
 import { ChevronRight, Users, Code, PenTool, Layout, Layers, Terminal } from "lucide-react";
 import Navbar from "@/components/Navbar";
 
+import { useState, useEffect } from "react";
+
 export default function RecruitmentDetailsPage() {
+  const [roles, setRoles] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchRoles = async () => {
+      try {
+        const res = await fetch("/api/roles");
+        if (res.ok) setRoles(await res.json());
+      } catch (error) {
+        console.error("Failed to fetch roles");
+      }
+    };
+    fetchRoles();
+  }, []);
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Navbar />
@@ -24,57 +40,22 @@ export default function RecruitmentDetailsPage() {
         </header>
 
         <div className="space-y-8">
-          <DomainCard 
-            tag="Leadership & Operations"
-            title="Management Team"
-            icon={<Layout className="w-6 h-6" />}
-            description="The backbone of our operations. This team coordinates project timelines, manages internal communications, and drives growth strategies."
-            items={[
-              "Project coordination and milestone tracking.",
-              "Strategic planning for marketplace expansion.",
-              "Managing community engagement and public relations."
-            ]}
-            href="/management"
-          />
-
-          <DomainCard 
-            tag="Development"
-            title="Web Frontend Development"
-            icon={<Code className="w-6 h-6" />}
-            description="Bringing our vision to life with clean code and high-performance user interfaces. Focus on React, Next.js, and seamless UX."
-            items={[
-              "Proficiency in HTML5, CSS3, and JavaScript (ES6+).",
-              "Experience with React, Next.js, or modern JS frameworks.",
-              "Focus on responsive design and user accessibility."
-            ]}
-            href="/frontend"
-          />
-
-          <DomainCard 
-            tag="Development"
-            title="Web Backend Development"
-            icon={<Terminal className="w-6 h-6" />}
-            description="Architecting the server-side logic and database management for a global trade scale using Node.js and cloud architecture."
-            items={[
-              "Knowledge of Node.js, Python, or Go.",
-              "Experience with SQL/NoSQL databases (PostgreSQL, MongoDB).",
-              "Understanding of RESTful APIs and cloud architecture."
-            ]}
-            href="/backend"
-          />
-
-          <DomainCard 
-            tag="Creative"
-            title="Social Media Design Team"
-            icon={<PenTool className="w-6 h-6" />}
-            description="Defining the visual language of Plenum through high-quality UI/UX and marketing assets in Figma and Adobe Creative Suite."
-            items={[
-              "Advanced skills in Figma or Adobe Creative Suite.",
-              "Experience in UI/UX wireframing and prototyping.",
-              "Ability to create engaging social media and branding content."
-            ]}
-            href="/design"
-          />
+          {roles.map((role) => (
+            <DomainCard 
+              key={role.id}
+              tag={role.tag}
+              title={role.title}
+              icon={role.tag === "Development" ? <Code className="w-6 h-6" /> : role.tag === "Creative" ? <PenTool className="w-6 h-6" /> : <Layout className="w-6 h-6" />}
+              description={role.description}
+              items={role.requirements.split('\n').filter((r: string) => r.trim() !== '').map((r: string) => r.replace(/^- /, ''))}
+              href={`/apply/${role.slug}`}
+            />
+          ))}
+          {roles.length === 0 && (
+            <div className="glass p-12 rounded-3xl border border-white/5 text-center text-muted-foreground">
+              No open positions at the moment. Please check back later.
+            </div>
+          )}
         </div>
       </main>
 

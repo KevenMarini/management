@@ -19,7 +19,23 @@ const staggerContainer = {
   }
 };
 
+import { useState, useEffect } from "react";
+
 export default function LandingPage() {
+  const [roles, setRoles] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchRoles = async () => {
+      try {
+        const res = await fetch("/api/roles");
+        if (res.ok) setRoles(await res.json());
+      } catch (error) {
+        console.error("Failed to fetch roles");
+      }
+    };
+    fetchRoles();
+  }, []);
+
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
@@ -145,38 +161,23 @@ export default function LandingPage() {
             className="flex gap-6 overflow-x-auto pb-12 pt-4 px-4 no-scrollbar snap-x snap-mandatory scroll-smooth"
             id="roles-slider"
           >
-            <div className="min-w-[320px] md:min-w-[450px] snap-center">
-              <RoleCard 
-                title="Frontend Development"
-                icon={<Code2 className="w-8 h-8" />}
-                desc="Architect responsive, highly-interactive user interfaces using Next.js and TailwindCSS."
-                href="/frontend"
-              />
-            </div>
-            <div className="min-w-[320px] md:min-w-[450px] snap-center">
-              <RoleCard 
-                title="Web Backend Development"
-                icon={<Database className="w-8 h-8" />}
-                desc="Design robust APIs, manage PostgreSQL databases, and ensure system scalability."
-                href="/backend"
-              />
-            </div>
-            <div className="min-w-[320px] md:min-w-[450px] snap-center">
-              <RoleCard 
-                title="Social Media Design"
-                icon={<PenTool className="w-8 h-8" />}
-                desc="Create stunning visual content, marketing materials, and digital brand assets."
-                href="/design"
-              />
-            </div>
-            <div className="min-w-[320px] md:min-w-[450px] snap-center">
-              <RoleCard 
-                title="Management Team"
-                icon={<Briefcase className="w-8 h-8" />}
-                desc="Drive product strategy, coordinate team operations, and oversee platform growth."
-                href="/management"
-              />
-            </div>
+            {roles.map((role) => (
+              <div key={role.id} className="min-w-[320px] md:min-w-[450px] snap-center">
+                <RoleCard 
+                  title={role.title}
+                  icon={role.tag === "Development" ? <Code2 className="w-8 h-8" /> : role.tag === "Creative" ? <PenTool className="w-8 h-8" /> : <Briefcase className="w-8 h-8" />}
+                  desc={role.description}
+                  href={`/apply/${role.slug}`}
+                />
+              </div>
+            ))}
+            {roles.length === 0 && (
+              <div className="min-w-[320px] md:min-w-[450px] snap-center">
+                <div className="glass p-8 md:p-12 rounded-[2.5rem] border border-white/5 h-full flex items-center justify-center">
+                  <p className="text-muted-foreground">No open roles currently. Check back later!</p>
+                </div>
+              </div>
+            )}
           </motion.div>
 
           {/* Carousel Controls */}
