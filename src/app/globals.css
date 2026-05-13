@@ -1,0 +1,87 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-background: #030303;
+  --color-foreground: #ffffff;
+  --color-primary: #8b5cf6;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #121212;
+  --color-secondary-foreground: #f3f4f6;
+  --color-muted: #0a0a0a;
+  --color-muted-foreground: #a1a1aa;
+  --color-accent: #8b5cf6;
+  --color-accent-foreground: #ffffff;
+  --color-border: #1a1a1a;
+  --color-input: #0a0a0a;
+  --color-card: #0a0a0a;
+  --color-card-foreground: #ffffff;
+
+  --radius-lg: 1rem;
+  --radius-md: 0.75rem;
+  --radius-sm: 0.5rem;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-background text-foreground min-h-screen relative;
+    background-color: #030303;
+    background-image: 
+      radial-gradient(ellipse 80% 80% at 50% -20%, rgba(139, 92, 246, 0.15), transparent),
+      linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 100% 100%, 50px 50px, 50px 50px;
+    background-attachment: fixed;
+    background-position: top center, center center, center center;
+  }
+}
+
+.glass {
+  background: rgba(3, 3, 3, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.form-input {
+  @apply w-full bg-muted border border-white/5 rounded-xl px-4 py-3 text-foreground outline-none focus:ring-2 focus:ring-primary/30 transition-all placeholder:text-muted-foreground focus:border-primary/50;
+}
+
+.btn-primary {
+  @apply bg-primary text-primary-foreground font-bold py-3 px-8 rounded-xl hover:shadow-[0_0_20px_rgba(139,92,246,0.4)] active:scale-[0.98] transition-all disabled:opacity-50 disabled:pointer-events-none;
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.reveal.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
