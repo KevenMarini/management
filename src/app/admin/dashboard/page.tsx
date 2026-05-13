@@ -223,7 +223,7 @@ export default function AdminDashboard() {
   const filteredApplicants = applicants.filter((a) => {
     const matchesSearch = a.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       a.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      a.skills.toLowerCase().includes(searchTerm.toLowerCase());
+      (a.skills || "").toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesDomain = selectedDomain === "All Domains" || a.domain === selectedDomain;
     
