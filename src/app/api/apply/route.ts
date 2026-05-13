@@ -32,11 +32,12 @@ export async function POST(request: Request) {
       SELECT id FROM users WHERE email = ${email} OR phone = ${phone} LIMIT 1
     `;
 
-    // Ensure undefined fields are mapped to null for database
+    // Ensure undefined fields are mapped correctly for database
+    // Note: interest, experience, and skills are NOT NULL in the schema, so we use empty string as fallback.
     const collegeVal = college || null;
-    const interestVal = interest || null;
-    const experienceVal = experience || null;
-    const skillsVal = skills || null;
+    const interestVal = interest || "";
+    const experienceVal = experience || "";
+    const skillsVal = skills || "";
     const questionsVal = questions || null;
 
     await sql`
