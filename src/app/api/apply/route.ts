@@ -32,9 +32,16 @@ export async function POST(request: Request) {
       SELECT id FROM users WHERE email = ${email} OR phone = ${phone} LIMIT 1
     `;
 
+    // Ensure undefined fields are mapped to null for database
+    const collegeVal = college || null;
+    const interestVal = interest || null;
+    const experienceVal = experience || null;
+    const skillsVal = skills || null;
+    const questionsVal = questions || null;
+
     await sql`
       INSERT INTO applicants (name, email, phone, year, college, interest, experience, linkedin, skills, questions, domain)
-      VALUES (${name}, ${email}, ${phone}, ${year}, ${college}, ${interest}, ${experience}, ${profileLink}, ${skills}, ${questions}, ${domain || 'Management'})
+      VALUES (${name}, ${email}, ${phone}, ${year}, ${collegeVal}, ${interestVal}, ${experienceVal}, ${profileLink}, ${skillsVal}, ${questionsVal}, ${domain || 'Management'})
     `;
 
     return NextResponse.json({ 
