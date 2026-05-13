@@ -32,7 +32,7 @@ export default function TaskPage() {
   const [activeTab, setActiveTab] = useState<"applied" | "more" | "tasks">("applied");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [allRoles, setAllRoles] = useState<{title: string, slug: string}[]>([]);
+  const [allRoles, setAllRoles] = useState<{title: string, slug: string, description: string}[]>([]);
   const [applyingDomain, setApplyingDomain] = useState<string | null>(null);
 
   useEffect(() => {
