@@ -205,7 +205,7 @@ export default function AdminDashboard() {
     if (applicants.length === 0) return;
     const headers = ["Name", "Email", "Phone", "Year", "College", "Domain", "Interest", "Experience", "LinkedIn", "Skills", "Questions", "Submitted At"];
     const rows = applicants.map((a) => [
-      a.name, a.email, a.phone, a.year, a.college || "", a.domain, a.interest, a.experience, a.linkedin || "", a.skills, a.questions || "", new Date(a.created_at).toLocaleString(),
+      a.name, a.email, a.phone, a.year, a.college || "", a.domain, a.interest || "", a.experience || "", a.linkedin || "", a.skills || "", a.questions || "", new Date(a.created_at).toLocaleString(),
     ]);
     const csvContent = [headers, ...rows].map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
