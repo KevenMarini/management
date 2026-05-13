@@ -7,7 +7,7 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   metadataBase: new URL("https://teamplenum.vercel.app"),
   title: "Team Plenum - Recruitment Portal",
-  description: "Management Domain Recruitment for Team Plenum",
+  description: "Domain Recruitment for Team Plenum",
 };
 
 export default function RootLayout({
