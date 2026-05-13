@@ -22,7 +22,6 @@ export async function POST(request: Request) {
     const applicants = await sql`
       SELECT name, email, phone, domain FROM applicants 
       WHERE email = ${user.email} OR phone = ${user.phone}
-      LIMIT 1
     `;
 
     const profileName = applicants.length > 0 ? applicants[0].name : "Unknown";
@@ -30,12 +29,15 @@ export async function POST(request: Request) {
     // Extract first name for the requirement: "display the first name enetered"
     const firstName = profileName.split(" ")[0];
 
+    const allDomains = applicants.map((a: any) => a.domain).filter(Boolean);
+    const uniqueDomains = Array.from(new Set(allDomains));
+
     return NextResponse.json({ 
       name: profileName,
       firstName: firstName,
       email: applicants.length > 0 ? applicants[0].email : user.email,
       phone: applicants.length > 0 ? applicants[0].phone : user.phone,
-      domain: applicants.length > 0 ? applicants[0].domain : "Unknown"
+      domains: uniqueDomains.length > 0 ? uniqueDomains : ["Unknown"]
     });
   } catch (error: any) {
     console.error("Login error:", error);

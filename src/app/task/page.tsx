@@ -20,7 +20,7 @@ export default function TaskPage() {
     firstName: string;
     email: string;
     phone: string;
-    domain: string;
+    domains: string[];
   } | null>(null);
 
   // Verification Form State
@@ -194,8 +194,14 @@ export default function TaskPage() {
                   </div>
                   
                   <div className="pt-4 border-t border-white/10">
-                    <p className="text-sm text-muted-foreground mb-1">Registered Domain</p>
-                    <p className="text-xl font-bold text-primary">{profile.domain}</p>
+                    <p className="text-sm text-muted-foreground mb-3">Registered Domains</p>
+                    <div className="flex flex-wrap gap-2">
+                      {profile.domains.map((d) => (
+                        <span key={d} className="px-4 py-1.5 rounded-full bg-primary/10 text-primary font-bold text-sm border border-primary/20">
+                          {d}
+                        </span>
+                      ))}
+                    </div>
                   </div>
 
                   <button 
