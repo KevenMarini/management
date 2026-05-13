@@ -9,9 +9,37 @@ export async function GET() {
     return NextResponse.json(roles);
   } catch (error: any) {
     console.error("Fetch roles error:", error);
-    // If table doesn't exist yet, return empty array instead of 500
     if (error.message && error.message.includes("relation \"roles\" does not exist")) {
-        return NextResponse.json([]);
+        try {
+          await sql`
+            CREATE TABLE IF NOT EXISTS roles (
+              id SERIAL PRIMARY KEY,
+              slug TEXT UNIQUE NOT NULL,
+              title TEXT NOT NULL,
+              tag TEXT NOT NULL,
+              description TEXT NOT NULL,
+              requirements TEXT NOT NULL,
+              is_active BOOLEAN DEFAULT true,
+              created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+            );
+            
+            INSERT INTO roles (slug, title, tag, description, requirements)
+            VALUES 
+              ('frontend', 'Web Frontend Development', 'Development', 'Architect responsive, highly-interactive user interfaces for Plenum using React and Next.js. You will translate design mockups into seamless experiences.', 'Proficiency in HTML5, CSS3, and JavaScript (ES6+)\nExperience with React, Next.js, or modern JS frameworks\nUnderstanding of responsive design and web performance optimization'),
+              ('backend', 'Web Backend Development', 'Development', 'Build the robust server-side architecture and APIs that power Plenum. You will handle database design, authentication, and core application logic.', 'Experience with Node.js, Python, or Go\nUnderstanding of RESTful APIs and database management (SQL/NoSQL)\nKnowledge of server deployment and basic security practices'),
+              ('design', 'UI/UX Design', 'Creative', 'Shape the visual identity and user journey of Plenum. You will create intuitive wireframes, stunning high-fidelity prototypes, and design systems.', 'Proficiency in Figma, Adobe XD, or similar design tools\nStrong portfolio demonstrating user-centric design thinking\nAbility to create clean, modern, and accessible interfaces'),
+              ('management', 'Project Management', 'Leadership', 'Coordinate teams, track milestones, and ensure the timely delivery of Plenum features. You are the glue that holds the technical and creative teams together.', 'Strong organizational and leadership skills\nExcellent communication and problem-solving abilities\nFamiliarity with Agile methodologies and project management tools')
+            ON CONFLICT (slug) DO NOTHING;
+          `;
+          
+          const newRoles = await sql`
+            SELECT * FROM roles ORDER BY created_at ASC
+          `;
+          return NextResponse.json(newRoles);
+        } catch (setupError) {
+          console.error("Auto-setup failed:", setupError);
+          return NextResponse.json([]);
+        }
     }
     return NextResponse.json({ error: "Failed to fetch roles" }, { status: 500 });
   }
@@ -26,10 +54,33 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    await sql`
-      INSERT INTO roles (slug, title, tag, description, requirements)
-      VALUES (${slug}, ${title}, ${tag}, ${description}, ${requirements})
-    `;
+    try {
+      await sql`
+        INSERT INTO roles (slug, title, tag, description, requirements)
+        VALUES (${slug}, ${title}, ${tag}, ${description}, ${requirements})
+      `;
+    } catch (insertError: any) {
+      if (insertError.message && insertError.message.includes("relation \"roles\" does not exist")) {
+        await sql`
+          CREATE TABLE IF NOT EXISTS roles (
+            id SERIAL PRIMARY KEY,
+            slug TEXT UNIQUE NOT NULL,
+            title TEXT NOT NULL,
+            tag TEXT NOT NULL,
+            description TEXT NOT NULL,
+            requirements TEXT NOT NULL,
+            is_active BOOLEAN DEFAULT true,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+          );
+        `;
+        await sql`
+          INSERT INTO roles (slug, title, tag, description, requirements)
+          VALUES (${slug}, ${title}, ${tag}, ${description}, ${requirements})
+        `;
+      } else {
+        throw insertError;
+      }
+    }
 
     return NextResponse.json({ message: "Role created successfully" }, { status: 201 });
   } catch (error: any) {
