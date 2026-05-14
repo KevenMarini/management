@@ -64,7 +64,7 @@ export async function GET(request: Request) {
       const isGlobal = searchParams.get("global") === "true";
       if (isGlobal) {
         const allSubmissions = await sql`
-          SELECT s.id, s.status, t.domain
+          SELECT s.id, s.status, t.domain, s.task_id
           FROM task_submissions s
           JOIN task_definitions t ON s.task_id = t.id
         `;

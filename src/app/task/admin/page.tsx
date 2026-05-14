@@ -177,6 +177,7 @@ export default function AdminDashboard() {
       if (!res.ok) throw new Error("Failed to delete submission");
       setTaskSubmissions(taskSubmissions.filter(s => s.submission_id !== id));
       if (expandedSubmission === id) setExpandedSubmission(null);
+      fetchAllSubmissions();
     } catch (err: any) { alert(err.message); }
   };
 
@@ -191,6 +192,7 @@ export default function AdminDashboard() {
       
       setTaskSubmissions(taskSubmissions.map(s => s.submission_id === id ? { ...s, status } : s));
       if (expandedSubmission === id) setExpandedSubmission(null);
+      fetchAllSubmissions();
     } catch (err: any) { alert(err.message); }
   };
 
@@ -481,16 +483,27 @@ export default function AdminDashboard() {
 
                   {loadingTasks ? <div className="flex justify-center py-10"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div> : (
                     <div className="grid gap-4">
-                      {tasks.filter(t => t.domain.toLowerCase() === manageTaskDomain.toLowerCase() && (!manageTaskTrack || t.technical_type?.toLowerCase() === manageTaskTrack.toLowerCase())).map(task => (
-                        <div key={task.id} className="glass p-6 rounded-2xl border border-white/5 flex flex-col md:flex-row gap-6 justify-between items-start">
-                          <div>
-                            <h3 className="text-xl font-bold mb-2">{task.name}</h3>
-                            <p className="text-muted-foreground text-sm mb-4">{task.description}</p>
-                            <span className="px-3 py-1 bg-white/10 text-white/80 rounded-lg text-xs font-medium">{task.questions?.length || 0} Questions</span>
+                      {tasks.filter(t => t.domain.toLowerCase() === manageTaskDomain.toLowerCase() && (!manageTaskTrack || t.technical_type?.toLowerCase() === manageTaskTrack.toLowerCase())).map(task => {
+                        const taskSubs = allSubmissions.filter(s => s.task_id === task.id);
+                        const pCount = taskSubs.filter(s => !s.status || s.status === 'pending').length;
+                        const aCount = taskSubs.filter(s => s.status === 'approved').length;
+                        const rCount = taskSubs.filter(s => s.status === 'rejected').length;
+                        
+                        return (
+                          <div key={task.id} className="p-4 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between group">
+                            <div>
+                              <h4 className="font-bold text-lg">{task.name}</h4>
+                              <p className="text-sm text-muted-foreground mb-2">{task.description}</p>
+                              <div className="flex gap-2">
+                                <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/20">P: {pCount}</span>
+                                <span className="text-[10px] px-2 py-0.5 rounded-full bg-green-500/10 text-green-500 border border-green-500/20">A: {aCount}</span>
+                                <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-500/10 text-red-500 border border-red-500/20">R: {rCount}</span>
+                              </div>
+                            </div>
+                            <button onClick={() => handleDeleteTask(task.id)} className="p-2 text-red-400 hover:bg-red-400/10 rounded-lg transition-colors opacity-0 group-hover:opacity-100"><Trash2 className="w-5 h-5" /></button>
                           </div>
-                          <button onClick={() => handleDeleteTask(task.id)} className="px-4 py-2 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors flex items-center gap-2"><Trash2 className="w-4 h-4" /> Delete</button>
-                        </div>
-                      ))}
+                        );
+                      })}
                       {tasks.filter(t => t.domain.toLowerCase() === manageTaskDomain.toLowerCase() && (!manageTaskTrack || t.technical_type?.toLowerCase() === manageTaskTrack.toLowerCase())).length === 0 && (
                         <p className="text-muted-foreground p-6 bg-white/5 rounded-2xl text-center">No tasks found for this domain.</p>
                       )}
@@ -620,12 +633,24 @@ export default function AdminDashboard() {
                   <button onClick={() => { if(isDevDomain(viewTaskDomain)) setViewTaskTrack(null); else setViewTaskDomain(null); }} className="text-muted-foreground hover:text-white flex items-center gap-2 mb-4"><ChevronRight className="w-4 h-4 rotate-180" /> Back</button>
                   <h2 className="text-3xl font-bold mb-6">{viewTaskDomain} Tasks</h2>
                   <div className="grid gap-4">
-                    {tasks.filter(t => t.domain.toLowerCase() === viewTaskDomain.toLowerCase() && (!viewTaskTrack || t.technical_type?.toLowerCase() === viewTaskTrack.toLowerCase())).map(task => (
-                      <div key={task.id} onClick={() => { setViewSelectedTask(task); fetchSubmissions(task.id); }} className="glass p-6 rounded-2xl border border-white/5 cursor-pointer hover:bg-white/10 transition-colors group">
-                        <h3 className="text-xl font-bold mb-2 group-hover:text-primary transition-colors">{task.name}</h3>
-                        <p className="text-muted-foreground text-sm">{task.description}</p>
-                      </div>
-                    ))}
+                    {tasks.filter(t => t.domain.toLowerCase() === viewTaskDomain.toLowerCase() && (!viewTaskTrack || t.technical_type?.toLowerCase() === viewTaskTrack.toLowerCase())).map(task => {
+                      const taskSubs = allSubmissions.filter(s => s.task_id === task.id);
+                      const pCount = taskSubs.filter(s => !s.status || s.status === 'pending').length;
+                      const aCount = taskSubs.filter(s => s.status === 'approved').length;
+                      const rCount = taskSubs.filter(s => s.status === 'rejected').length;
+                      
+                      return (
+                        <div key={task.id} onClick={() => { setViewSelectedTask(task); fetchSubmissions(task.id); }} className="glass p-6 rounded-2xl border border-white/5 cursor-pointer hover:bg-white/10 transition-colors group">
+                          <h3 className="text-xl font-bold mb-2 group-hover:text-primary transition-colors">{task.name}</h3>
+                          <p className="text-muted-foreground text-sm mb-4">{task.description}</p>
+                          <div className="flex gap-3">
+                            <span className="text-xs px-2 py-1 rounded-lg bg-amber-500/10 text-amber-500 border border-amber-500/20">Pending: {pCount}</span>
+                            <span className="text-xs px-2 py-1 rounded-lg bg-green-500/10 text-green-500 border border-green-500/20">Approved: {aCount}</span>
+                            <span className="text-xs px-2 py-1 rounded-lg bg-red-500/10 text-red-500 border border-red-500/20">Rejected: {rCount}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
                     {tasks.filter(t => t.domain.toLowerCase() === viewTaskDomain.toLowerCase()).length === 0 && (
                       <p className="text-muted-foreground p-6 bg-white/5 rounded-2xl text-center">No tasks exist for this domain yet.</p>
                     )}
