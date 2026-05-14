@@ -443,9 +443,17 @@ export default function AdminDashboard() {
                   <h2 className="text-3xl font-bold mb-6">{viewTaskDomain} Tasks</h2>
                   <div className="grid gap-4">
                     {tasks.filter(t => t.domain.toLowerCase() === viewTaskDomain.toLowerCase() && (!viewTaskTrack || t.technical_type?.toLowerCase() === viewTaskTrack.toLowerCase())).map(task => (
-                      <div key={task.id} onClick={() => { setViewSelectedTask(task); fetchSubmissions(task.id); }} className="glass p-6 rounded-2xl border border-white/5 cursor-pointer hover:bg-white/10 transition-colors group">
-                        <h3 className="text-xl font-bold mb-2 group-hover:text-primary transition-colors">{task.name}</h3>
-                        <p className="text-muted-foreground text-sm">{task.description}</p>
+                      <div key={task.id} onClick={() => { setViewSelectedTask(task); fetchSubmissions(task.id); }} className="glass p-6 rounded-2xl border border-white/5 cursor-pointer hover:bg-white/10 transition-colors group flex items-center justify-between">
+                        <div>
+                          <h3 className="text-xl font-bold mb-2 group-hover:text-primary transition-colors">{task.name}</h3>
+                          <p className="text-muted-foreground text-sm">{task.description}</p>
+                        </div>
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); handleDeleteTask(task.id); }} 
+                          className="px-4 py-2 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors flex items-center gap-2 shrink-0 opacity-0 group-hover:opacity-100"
+                        >
+                          <Trash2 className="w-4 h-4" /> Delete
+                        </button>
                       </div>
                     ))}
                     {tasks.filter(t => t.domain.toLowerCase() === viewTaskDomain.toLowerCase()).length === 0 && (
@@ -455,7 +463,18 @@ export default function AdminDashboard() {
                 </>
               ) : (
                 <div className="space-y-6">
-                  <button onClick={() => { setViewSelectedTask(null); setTaskSubmissions([]); setExpandedSubmission(null); }} className="text-muted-foreground hover:text-white flex items-center gap-2 mb-4"><ChevronRight className="w-4 h-4 rotate-180" /> Back to Tasks</button>
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                    <button onClick={() => { setViewSelectedTask(null); setTaskSubmissions([]); setExpandedSubmission(null); }} className="text-muted-foreground hover:text-white flex items-center gap-2"><ChevronRight className="w-4 h-4 rotate-180" /> Back to Tasks</button>
+                    <button 
+                      onClick={() => {
+                        handleDeleteTask(viewSelectedTask.id);
+                        setViewSelectedTask(null);
+                      }} 
+                      className="px-4 py-2 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors flex items-center gap-2 text-sm font-bold"
+                    >
+                      <Trash2 className="w-4 h-4" /> Delete This Task
+                    </button>
+                  </div>
                   <h2 className="text-3xl font-bold">{viewSelectedTask.name} - Submissions</h2>
                   <p className="text-muted-foreground">Viewing all applicant answers for this task.</p>
                   
