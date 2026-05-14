@@ -58,6 +58,12 @@ export default function TaskPage() {
   const [uploadingFile, setUploadingFile] = useState<number | null>(null);
 
   const handleFileUpload = async (fieldOrQuestionId: string | number, file: File) => {
+    // Limit size to 2MB
+    if (file.size > 2 * 1024 * 1024) {
+      alert("File is too large! Maximum size allowed is 2MB.");
+      return;
+    }
+
     setUploadingFile(typeof fieldOrQuestionId === 'number' ? fieldOrQuestionId : 999);
     try {
       const res = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}`, {
@@ -425,7 +431,7 @@ export default function TaskPage() {
                                   </div>
                                   <div>
                                     <p className="text-sm font-bold">{uploadingFile === 999 ? "Uploading..." : "Upload Professional Photo"}</p>
-                                    <p className="text-xs text-muted-foreground">JPG, PNG or WebP</p>
+                                    <p className="text-xs text-muted-foreground">JPG, PNG or WebP (Max 2MB)</p>
                                   </div>
                                 </label>
                               </div>
@@ -781,7 +787,7 @@ export default function TaskPage() {
                                         {uploadingFile === q.id ? <Loader2 className="w-8 h-8 animate-spin text-primary" /> : <Upload className="w-8 h-8 text-muted-foreground group-hover:text-primary transition-colors" />}
                                         <div className="text-center">
                                           <p className="font-bold">{uploadingFile === q.id ? "Uploading..." : "Click to Upload File"}</p>
-                                          <p className="text-xs text-muted-foreground mt-1">Maximum file size: 5MB</p>
+                                          <p className="text-xs text-muted-foreground mt-1">Maximum file size: 2MB</p>
                                         </div>
                                       </label>
                                     </div>
