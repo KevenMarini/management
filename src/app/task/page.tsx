@@ -527,6 +527,9 @@ export default function TaskPage() {
                         <div className="grid gap-4">
                           {profile.domains.map((domain, i) => {
                             const domainTasks = allTasks.filter(t => t.domain.toLowerCase() === domain.toLowerCase());
+                            const completedCount = domainTasks.filter(t => completedTasks.includes(t.id)).length;
+                            const isDev = domain.toLowerCase().includes("develop") || domain.toLowerCase() === "technical";
+                            
                             return (
                               <div key={i} className="p-6 rounded-2xl bg-white/5 border border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 group">
                                 <div className="flex items-center gap-4">
@@ -535,7 +538,13 @@ export default function TaskPage() {
                                   </div>
                                   <div>
                                     <h3 className="font-bold text-lg">{domain}</h3>
-                                    <p className="text-sm text-amber-400">{domainTasks.length} {domainTasks.length === 1 ? 'Task' : 'Tasks'} Available</p>
+                                    <p className="text-sm text-amber-400 font-medium mt-1">
+                                      {isDev ? (
+                                        `${completedCount} Task${completedCount === 1 ? '' : 's'} Completed`
+                                      ) : (
+                                        `${completedCount} / ${domainTasks.length} Task${domainTasks.length === 1 ? '' : 's'} Completed`
+                                      )}
+                                    </p>
                                   </div>
                                 </div>
                                 <button 
