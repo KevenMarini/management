@@ -290,15 +290,35 @@ export default function AdminDashboard() {
         
         {/* Sidebar */}
         <div className="w-full md:w-64 shrink-0 space-y-2">
-          <button onClick={() => setActiveTab("applicants")} className={`w-full flex items-center justify-between px-4 py-4 rounded-2xl transition-all cursor-pointer ${activeTab === "applicants" ? "bg-primary text-primary-foreground font-bold" : "hover:bg-white/5 text-muted-foreground"}`}>
-            <div className="flex items-center gap-3">
-              <Users className="w-5 h-5" /> 
-              <span>All Domains</span>
-            </div>
-            <span className={`px-2 py-0.5 rounded-lg text-xs font-bold ${activeTab === 'applicants' ? 'bg-white/20 text-white' : 'bg-primary/10 text-primary'}`}>
-              {applicants.length}
-            </span>
+          <button onClick={() => setActiveTab("applicants")} className={`w-full flex items-center gap-3 px-4 py-4 rounded-2xl transition-all cursor-pointer ${activeTab === "applicants" ? "bg-primary text-primary-foreground font-bold" : "hover:bg-white/5 text-muted-foreground"}`}>
+            <Users className="w-5 h-5" /> Applicants
           </button>
+          <button onClick={() => { setActiveTab("tasks"); setManageTaskDomain(null); setManageTaskTrack(null); setIsCreatingTask(false); }} className={`w-full flex items-center gap-3 px-4 py-4 rounded-2xl transition-all cursor-pointer ${activeTab === "tasks" ? "bg-primary text-primary-foreground font-bold" : "hover:bg-white/5 text-muted-foreground"}`}>
+            <PenTool className="w-5 h-5" /> Manage Tasks
+          </button>
+          <button 
+                onClick={() => { setActiveTab("task_view"); setViewSelectedTask(null); setViewTaskDomain(null); setViewTaskTrack(null); setSubmissionFilter("pending"); }} 
+                className={`w-full p-4 rounded-2xl flex items-center gap-3 transition-all ${activeTab === "task_view" ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20" : "text-muted-foreground hover:bg-white/5"}`}
+              >
+                <Eye className="w-5 h-5" />
+                <span className="font-bold">Task View</span>
+              </button>
+
+              <button 
+                onClick={() => { setActiveTab("accepted"); setViewSelectedTask(null); setViewTaskDomain(null); setViewTaskTrack(null); setSubmissionFilter("approved"); }} 
+                className={`w-full p-4 rounded-2xl flex items-center gap-3 transition-all ${activeTab === "accepted" ? "bg-green-500 text-white shadow-lg shadow-green-500/20" : "text-muted-foreground hover:bg-white/5"}`}
+              >
+                <CheckCircle2 className="w-5 h-5" />
+                <span className="font-bold">Accepted List</span>
+              </button>
+
+              <button 
+                onClick={() => { setActiveTab("rejected"); setViewSelectedTask(null); setViewTaskDomain(null); setViewTaskTrack(null); setSubmissionFilter("rejected"); }} 
+                className={`w-full p-4 rounded-2xl flex items-center gap-3 transition-all ${activeTab === "rejected" ? "bg-red-500 text-white shadow-lg shadow-red-500/20" : "text-muted-foreground hover:bg-white/5"}`}
+              >
+                <X className="w-5 h-5" />
+                <span className="font-bold">Rejected List</span>
+              </button>
         </div>
 
         {/* Content Area */}
