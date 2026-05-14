@@ -541,7 +541,17 @@ export default function TaskPage() {
                                 <button 
                                   onClick={() => {
                                     setSelectedTaskDomain(domain);
-                                    setSelectedTechnicalTrack(null);
+                                    const isDev = domain.toLowerCase().includes("develop") || domain.toLowerCase() === "technical";
+                                    if (isDev) {
+                                      const savedTrack = localStorage.getItem(`${userid}_track_${domain}`);
+                                      if (savedTrack) {
+                                        setSelectedTechnicalTrack(savedTrack);
+                                      } else {
+                                        setSelectedTechnicalTrack(null);
+                                      }
+                                    } else {
+                                      setSelectedTechnicalTrack(null);
+                                    }
                                     setSelectedTask(null);
                                   }}
                                   className="shrink-0 px-6 py-2 rounded-xl border border-white/10 hover:bg-white/10 transition-colors flex items-center gap-2 cursor-pointer"
@@ -567,7 +577,10 @@ export default function TaskPage() {
                           {["Frontend", "Backend", "Both"].map(track => (
                             <button 
                               key={track}
-                              onClick={() => setSelectedTechnicalTrack(track)}
+                              onClick={() => {
+                                setSelectedTechnicalTrack(track);
+                                localStorage.setItem(`${userid}_track_${selectedTaskDomain}`, track);
+                              }}
                               className="p-8 rounded-2xl glass border border-white/10 hover:border-primary/50 hover:bg-white/10 transition-all text-center cursor-pointer group"
                             >
                               <Briefcase className="w-8 h-8 text-primary mx-auto mb-4 group-hover:scale-110 transition-transform" />
@@ -587,9 +600,21 @@ export default function TaskPage() {
                         >
                           <ChevronRight className="w-4 h-4 rotate-180" /> Back
                         </button>
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 w-full">
                           <h2 className="text-2xl font-bold">{selectedTaskDomain} Tasks</h2>
                           {selectedTechnicalTrack && <span className="px-3 py-1 rounded-lg bg-blue-500/20 text-blue-400 text-xs font-bold uppercase">{selectedTechnicalTrack}</span>}
+                          
+                          {(selectedTaskDomain.toLowerCase().includes("develop") || selectedTaskDomain.toLowerCase() === "technical") && (
+                            <button 
+                              onClick={() => {
+                                localStorage.removeItem(`${userid}_track_${selectedTaskDomain}`);
+                                setSelectedTechnicalTrack(null);
+                              }}
+                              className="ml-auto text-xs flex items-center gap-1 text-muted-foreground hover:text-white px-3 py-1.5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors"
+                            >
+                              <PenTool className="w-3 h-3" /> Edit Track
+                            </button>
+                          )}
                         </div>
                         <div className="grid gap-4">
                           {allTasks
