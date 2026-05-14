@@ -584,10 +584,16 @@ export default function AdminDashboard() {
                             </div>
                             <div>
                               <h3 className="font-bold text-xl">{r.title}</h3>
-                              <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
-                                <span className={`w-1.5 h-1.5 rounded-full ${activeTab === 'task_view' ? 'bg-amber-500' : activeTab === 'accepted' ? 'bg-green-500' : 'bg-red-500'}`} />
-                                {countToDisplay} {label} Submissions
-                              </p>
+                              <div className="text-[10px] text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 mt-1">
+                                <span className="flex items-center gap-1.5">
+                                  <Users className="w-3 h-3 text-primary" />
+                                  {applicants.filter(a => a.domain === r.title).length} Applicants
+                                </span>
+                                <span className="flex items-center gap-1.5">
+                                  <span className={`w-1.5 h-1.5 rounded-full ${activeTab === 'task_view' ? 'bg-amber-500' : activeTab === 'accepted' ? 'bg-green-500' : 'bg-red-500'}`} />
+                                  {countToDisplay} {label}
+                                </span>
+                              </div>
                             </div>
                           </div>
                           <ChevronRight className="w-6 h-6 text-muted-foreground group-hover:text-primary group-hover:translate-x-2 transition-all" />
