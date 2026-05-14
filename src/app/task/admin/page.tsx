@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Loader2, Users, Calendar, Mail, Phone, Briefcase, ExternalLink, ChevronDown, ChevronUp, CheckCircle2, User, Trash2, LayoutList, PlusCircle, PenTool, Link2, FileText, ChevronRight, Eye } from "lucide-react";
+import { Search, Loader2, Users, Calendar, Mail, Phone, Briefcase, ExternalLink, ChevronDown, ChevronUp, CheckCircle2, User, Trash2, LayoutList, PlusCircle, PenTool, Link2, FileText, ChevronRight, Eye, X } from "lucide-react";
 
 type Applicant = {
   id: number;
