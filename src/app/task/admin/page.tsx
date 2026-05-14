@@ -106,6 +106,12 @@ export default function AdminDashboard() {
   const [submissionFilter, setSubmissionFilter] = useState<"pending" | "approved" | "rejected">("pending");
 
   useEffect(() => {
+    if (activeTab === "task_view") setSubmissionFilter("pending");
+    else if (activeTab === "accepted") setSubmissionFilter("approved");
+    else if (activeTab === "rejected") setSubmissionFilter("rejected");
+  }, [activeTab]);
+
+  useEffect(() => {
     fetch("/api/applicants-all")
       .then(res => res.json())
       .then(data => { if (Array.isArray(data)) setApplicants(data); setLoading(false); })
@@ -313,7 +319,10 @@ export default function AdminDashboard() {
                 className={`w-full p-4 rounded-2xl flex items-center gap-3 transition-all ${activeTab === "task_view" ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20" : "text-muted-foreground hover:bg-white/5"}`}
               >
                 <Eye className="w-5 h-5" />
-                <span className="font-bold">Task View</span>
+                <span className="font-bold flex-1 text-left">Task View</span>
+                <span className="text-[10px] bg-white/10 px-1.5 py-0.5 rounded">
+                  {allSubmissions.filter(s => !s.status || s.status === 'pending').length}
+                </span>
               </button>
 
               <button 
@@ -321,7 +330,10 @@ export default function AdminDashboard() {
                 className={`w-full p-4 rounded-2xl flex items-center gap-3 transition-all ${activeTab === "accepted" ? "bg-green-500 text-white shadow-lg shadow-green-500/20" : "text-muted-foreground hover:bg-white/5"}`}
               >
                 <CheckCircle2 className="w-5 h-5" />
-                <span className="font-bold">Accepted List</span>
+                <span className="font-bold flex-1 text-left">Accepted List</span>
+                <span className="text-[10px] bg-white/10 px-1.5 py-0.5 rounded">
+                  {allSubmissions.filter(s => s.status === 'approved').length}
+                </span>
               </button>
 
               <button 
@@ -329,7 +341,10 @@ export default function AdminDashboard() {
                 className={`w-full p-4 rounded-2xl flex items-center gap-3 transition-all ${activeTab === "rejected" ? "bg-red-500 text-white shadow-lg shadow-red-500/20" : "text-muted-foreground hover:bg-white/5"}`}
               >
                 <X className="w-5 h-5" />
-                <span className="font-bold">Rejected List</span>
+                <span className="font-bold flex-1 text-left">Rejected List</span>
+                <span className="text-[10px] bg-white/10 px-1.5 py-0.5 rounded">
+                  {allSubmissions.filter(s => s.status === 'rejected').length}
+                </span>
               </button>
         </div>
 
