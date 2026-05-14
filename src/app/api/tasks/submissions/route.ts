@@ -61,13 +61,25 @@ export async function GET(request: Request) {
     }
 
     if (!taskId) {
-      return NextResponse.json({ error: "Task ID is required for fetching submissions" }, { status: 400 });
+      // Fetch ALL submissions with Task and Applicant details
+      const submissions = await sql`
+        SELECT s.id as submission_id, s.created_at, s.status, u.userid, u.email,
+               t.name as task_name, t.domain,
+               (SELECT a.name FROM applicants a WHERE a.email = u.email ORDER BY a.created_at ASC LIMIT 1) as user_name,
+               (SELECT a.photo_link FROM applicants a WHERE a.email = u.email ORDER BY a.created_at ASC LIMIT 1) as photo_link
+        FROM task_submissions s
+        JOIN users u ON s.userid = u.userid
+        JOIN task_definitions t ON s.task_id = t.id
+        ORDER BY s.created_at DESC
+      `;
+      return NextResponse.json(submissions);
     }
 
     // Fetch all submissions for a specific task
     const submissions = await sql`
       SELECT s.id as submission_id, s.created_at, s.status, u.userid, 
-             (SELECT a.name FROM applicants a WHERE a.email = u.email ORDER BY a.created_at ASC LIMIT 1) as user_name
+             (SELECT a.name FROM applicants a WHERE a.email = u.email ORDER BY a.created_at ASC LIMIT 1) as user_name,
+             (SELECT a.photo_link FROM applicants a WHERE a.email = u.email ORDER BY a.created_at ASC LIMIT 1) as photo_link
       FROM task_submissions s
       JOIN users u ON s.userid = u.userid
       WHERE s.task_id = ${taskId}

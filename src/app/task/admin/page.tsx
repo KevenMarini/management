@@ -40,7 +40,7 @@ type TaskQuestion = {
 };
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<"applicants" | "tasks" | "task_view" | "accepted" | "rejected">("applicants");
+  const [activeTab, setActiveTab] = useState<"applicants" | "tasks" | "task_view" | "accepted" | "rejected" | "master_list">("applicants");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loginUsername, setLoginUsername] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
@@ -103,6 +103,8 @@ export default function AdminDashboard() {
   const [loadingSubmissions, setLoadingSubmissions] = useState(false);
   const [expandedSubmission, setExpandedSubmission] = useState<number | null>(null);
   const [submissionFilter, setSubmissionFilter] = useState<"pending" | "approved" | "rejected">("pending");
+  const [masterSubmissions, setMasterSubmissions] = useState<any[]>([]);
+  const [loadingMaster, setLoadingMaster] = useState(false);
 
   useEffect(() => {
     fetch("/api/applicants-all")
@@ -136,6 +138,17 @@ export default function AdminDashboard() {
         setLoadingSubmissions(false);
       })
       .catch(err => { console.error(err); setTaskSubmissions([]); setLoadingSubmissions(false); });
+  };
+
+  const fetchMasterSubmissions = () => {
+    setLoadingMaster(true);
+    fetch(`/api/tasks/submissions?t=${Date.now()}`)
+      .then(r => r.json())
+      .then(data => {
+        if (Array.isArray(data)) setMasterSubmissions(data);
+        setLoadingMaster(false);
+      })
+      .catch(err => { console.error(err); setLoadingMaster(false); });
   };
 
   const handleDeleteApplicant = async (id: number, e: React.MouseEvent) => {
@@ -317,6 +330,16 @@ export default function AdminDashboard() {
                 <X className="w-5 h-5" />
                 <span className="font-bold">Rejected List</span>
               </button>
+
+              <div className="pt-2 border-t border-white/5">
+                <button 
+                  onClick={() => { setActiveTab("master_list"); fetchMasterSubmissions(); }} 
+                  className={`w-full p-4 rounded-2xl flex items-center gap-3 transition-all ${activeTab === "master_list" ? "bg-white text-black shadow-lg shadow-white/20" : "text-muted-foreground hover:bg-white/5"}`}
+                >
+                  <LayoutList className="w-5 h-5" />
+                  <span className="font-bold">List</span>
+                </button>
+              </div>
         </div>
 
         {/* Content Area */}
@@ -664,6 +687,93 @@ export default function AdminDashboard() {
               )}
             </motion.div>
           )}
+
+          {activeTab === "master_list" && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-6">
+                <div>
+                  <h1 className="text-3xl font-bold tracking-tight mb-2">Master Submissions List</h1>
+                  <p className="text-muted-foreground">Overview of all task submissions from all applicants.</p>
+                </div>
+              </div>
+
+              {loadingMaster ? (
+                <div className="flex justify-center py-20"><Loader2 className="w-10 h-10 animate-spin text-primary" /></div>
+              ) : (
+                <div className="space-y-4">
+                  {masterSubmissions.length === 0 ? (
+                    <div className="text-center py-16 glass rounded-3xl border border-white/5">
+                      <p className="text-muted-foreground">No submissions found yet.</p>
+                    </div>
+                  ) : (
+                    masterSubmissions.map((sub) => (
+                      <motion.div key={sub.submission_id} className="glass rounded-2xl border border-white/5 overflow-hidden transition-all hover:border-white/10">
+                        <div onClick={() => setExpandedSubmission(expandedSubmission === sub.submission_id ? null : sub.submission_id)} className="p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 cursor-pointer hover:bg-white/5 transition-colors">
+                          <div className="flex items-center gap-4">
+                            <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden border border-white/10 shrink-0">
+                              {sub.photo_link ? <img src={sub.photo_link} alt={sub.user_name} className="w-full h-full object-cover" /> : <User className="w-7 h-7 text-primary/50" />}
+                            </div>
+                            <div>
+                              <h3 className="font-bold text-xl">{sub.user_name || sub.userid}</h3>
+                              <p className="text-muted-foreground flex items-center gap-2 text-sm"><Mail className="w-3 h-3"/> {sub.email}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-4 w-full md:w-auto justify-between">
+                            <div className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border ${
+                              sub.status === 'approved' ? 'bg-green-500/10 text-green-400 border-green-500/20' : 
+                              sub.status === 'rejected' ? 'bg-red-500/10 text-red-400 border-red-500/20' : 
+                              'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                            }`}>
+                              {sub.status || 'pending'}
+                            </div>
+                            <div className="text-muted-foreground ml-2">{expandedSubmission === sub.submission_id ? <ChevronUp className="w-6 h-6" /> : <ChevronDown className="w-6 h-6" />}</div>
+                          </div>
+                        </div>
+                        <AnimatePresence>
+                          {expandedSubmission === sub.submission_id && (
+                            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden border-t border-white/5 bg-black/20">
+                              <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-12">
+                                <div>
+                                  <h4 className="text-[10px] font-bold text-primary uppercase tracking-[0.2em] mb-6 border-b border-primary/20 pb-2">Submission Details</h4>
+                                  <div className="space-y-6">
+                                    <div className="p-4 rounded-xl bg-white/5 border border-white/5">
+                                      <p className="text-[9px] text-muted-foreground uppercase tracking-widest mb-1">Target Domain</p>
+                                      <p className="font-bold text-lg text-primary">{sub.domain}</p>
+                                    </div>
+                                    <div className="p-4 rounded-xl bg-white/5 border border-white/5">
+                                      <p className="text-[9px] text-muted-foreground uppercase tracking-widest mb-1">Task Name</p>
+                                      <p className="font-bold text-base text-white/90">{sub.task_name}</p>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div>
+                                  <h4 className="text-[10px] font-bold text-primary uppercase tracking-[0.2em] mb-6 border-b border-primary/20 pb-2">Timeline & Meta</h4>
+                                  <div className="space-y-6">
+                                    <div className="flex items-center gap-4">
+                                      <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-muted-foreground"><Calendar className="w-5 h-5" /></div>
+                                      <div>
+                                        <p className="text-[9px] text-muted-foreground uppercase tracking-widest">Submitted At</p>
+                                        <p className="font-medium text-sm">{new Date(sub.created_at).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}</p>
+                                      </div>
+                                    </div>
+                                    <div className="flex items-center gap-4">
+                                      <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-muted-foreground"><User className="w-5 h-5" /></div>
+                                      <div>
+                                        <p className="text-[9px] text-muted-foreground uppercase tracking-widest">System User ID</p>
+                                        <p className="font-mono text-[10px] p-1 px-2 bg-black/50 rounded border border-white/10 text-white/60">{sub.userid}</p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </motion.div>
+                    ))
+                  )}
+                </div>
+              )}
 
         </div>
       </main>
