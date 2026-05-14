@@ -57,8 +57,8 @@ export default function TaskPage() {
   const [isSubmittingTask, setIsSubmittingTask] = useState(false);
   const [uploadingFile, setUploadingFile] = useState<number | null>(null);
 
-  const handleFileUpload = async (questionId: number, file: File) => {
-    setUploadingFile(questionId);
+  const handleFileUpload = async (fieldOrQuestionId: string | number, file: File) => {
+    setUploadingFile(typeof fieldOrQuestionId === 'number' ? fieldOrQuestionId : 999);
     try {
       const res = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}`, {
         method: "POST",
@@ -66,7 +66,12 @@ export default function TaskPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Upload failed");
-      setTaskAnswers({ ...taskAnswers, [questionId]: data.url });
+      
+      if (typeof fieldOrQuestionId === 'number') {
+        setTaskAnswers({ ...taskAnswers, [fieldOrQuestionId]: data.url });
+      } else {
+        setProfileForm({ ...profileForm, [fieldOrQuestionId]: data.url });
+      }
     } catch (err: any) {
       alert(err.message);
     } finally {
@@ -395,9 +400,48 @@ export default function TaskPage() {
                       >
                         <p className="text-muted-foreground mb-4">Please provide your professional details to proceed with your applications.</p>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium text-muted-foreground">Photo (Google Drive Link)</label>
-                            <input type="url" required value={profileForm.photoLink} onChange={e => setProfileForm({...profileForm, photoLink: e.target.value})} placeholder="https://drive.google.com/..." className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 text-white" />
+                          <div className="space-y-2 md:col-span-2">
+                            <label className="text-sm font-medium text-muted-foreground flex items-center justify-between">
+                              <span>Profile Photo (Optional)</span>
+                              {profileForm.photoLink && <span className="text-xs text-green-400 font-bold flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Uploaded</span>}
+                            </label>
+                            
+                            {!profileForm.photoLink ? (
+                              <div className="relative">
+                                <input 
+                                  type="file" 
+                                  accept="image/*"
+                                  onChange={e => e.target.files?.[0] && handleFileUpload('photoLink', e.target.files[0])}
+                                  disabled={uploadingFile === 999}
+                                  className="hidden"
+                                  id="profile-photo-upload"
+                                />
+                                <label 
+                                  htmlFor="profile-photo-upload"
+                                  className="w-full flex items-center gap-4 p-4 rounded-xl border border-dashed border-white/20 bg-white/5 hover:bg-white/10 hover:border-primary/50 transition-all cursor-pointer group"
+                                >
+                                  <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center text-muted-foreground group-hover:text-primary transition-colors">
+                                    {uploadingFile === 999 ? <Loader2 className="w-5 h-5 animate-spin" /> : <Upload className="w-5 h-5" />}
+                                  </div>
+                                  <div>
+                                    <p className="text-sm font-bold">{uploadingFile === 999 ? "Uploading..." : "Upload Professional Photo"}</p>
+                                    <p className="text-xs text-muted-foreground">JPG, PNG or WebP</p>
+                                  </div>
+                                </label>
+                              </div>
+                            ) : (
+                              <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-10 h-10 rounded-full overflow-hidden border border-white/20 bg-black">
+                                    <img src={profileForm.photoLink} alt="Profile" className="w-full h-full object-cover" />
+                                  </div>
+                                  <div className="overflow-hidden">
+                                    <p className="text-xs font-bold truncate max-w-[150px] md:max-w-[250px]">{profileForm.photoLink}</p>
+                                  </div>
+                                </div>
+                                <button type="button" onClick={() => setProfileForm({...profileForm, photoLink: ""})} className="p-2 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors"><Trash2 className="w-4 h-4"/></button>
+                              </div>
+                            )}
                           </div>
                           <div className="space-y-2">
                             <label className="text-sm font-medium text-muted-foreground">Age</label>
