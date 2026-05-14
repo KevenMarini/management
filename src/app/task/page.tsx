@@ -450,27 +450,27 @@ export default function TaskPage() {
                             )}
                           </div>
                           <div className="space-y-2">
-                            <label className="text-sm font-medium text-muted-foreground">Age</label>
+                            <label className="text-sm font-medium text-muted-foreground">Age <span className="text-red-500">*</span></label>
                             <input type="number" required min="16" max="100" value={profileForm.age} onChange={e => setProfileForm({...profileForm, age: e.target.value})} placeholder="e.g. 20" className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 text-white" />
                           </div>
                           <div className="space-y-2">
-                            <label className="text-sm font-medium text-muted-foreground">Date of Birth</label>
+                            <label className="text-sm font-medium text-muted-foreground">Date of Birth <span className="text-red-500">*</span></label>
                             <input type="date" required value={profileForm.dob} onChange={e => setProfileForm({...profileForm, dob: e.target.value})} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 text-white [color-scheme:dark]" />
                           </div>
                           <div className="space-y-2">
-                            <label className="text-sm font-medium text-muted-foreground">Resume/Portfolio Link</label>
-                            <input type="url" required value={profileForm.resumeLink} onChange={e => setProfileForm({...profileForm, resumeLink: e.target.value})} placeholder="Google Docs, Portfolio, etc." className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 text-white" />
+                            <label className="text-sm font-medium text-muted-foreground">Resume/Portfolio Link (Optional)</label>
+                            <input type="url" value={profileForm.resumeLink} onChange={e => setProfileForm({...profileForm, resumeLink: e.target.value})} placeholder="Google Docs, Portfolio, etc." className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 text-white" />
                           </div>
                           <div className="space-y-2">
-                            <label className="text-sm font-medium text-muted-foreground">LinkedIn Profile</label>
+                            <label className="text-sm font-medium text-muted-foreground">LinkedIn Profile (Optional)</label>
                             <input type="url" value={profileForm.linkedin} onChange={e => setProfileForm({...profileForm, linkedin: e.target.value})} placeholder="https://linkedin.com/in/..." className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 text-white" />
                           </div>
                           <div className="space-y-2">
-                            <label className="text-sm font-medium text-muted-foreground">GitHub Profile</label>
+                            <label className="text-sm font-medium text-muted-foreground">GitHub Profile (Optional)</label>
                             <input type="url" value={profileForm.github} onChange={e => setProfileForm({...profileForm, github: e.target.value})} placeholder="https://github.com/..." className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 text-white" />
                           </div>
                           <div className="space-y-2 md:col-span-2">
-                            <label className="text-sm font-medium text-muted-foreground">Address</label>
+                            <label className="text-sm font-medium text-muted-foreground">Address <span className="text-red-500">*</span></label>
                             <textarea required value={profileForm.address} onChange={e => setProfileForm({...profileForm, address: e.target.value})} rows={3} placeholder="Your full address..." className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 text-white resize-none" />
                           </div>
                         </div>
