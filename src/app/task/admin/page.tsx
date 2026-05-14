@@ -770,9 +770,9 @@ export default function AdminDashboard() {
                           )}
                         </AnimatePresence>
                       </motion.div>
-                    ))
                   )}
                 </div>
+              )}
             </motion.div>
           )}
 
