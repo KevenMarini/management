@@ -318,29 +318,12 @@ export default function AdminDashboard() {
               <div className="flex bg-muted p-1 rounded-lg w-fit">
                 <button
                   onClick={() => setView("applicants")}
-                  className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${view === "applicants" ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                  className={`px-4 py-1.5 text-sm font-bold rounded-md transition-all flex items-center gap-3 ${view === "applicants" ? "bg-background shadow-sm text-primary" : "text-muted-foreground"}`}
                 >
-                  Applicants
-                </button>
-                {isSuperAdmin && (
-                  <button
-                    onClick={() => setView("logs")}
-                    className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${view === "logs" ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
-                  >
-                    System Logs
-                  </button>
-                )}
-                <button
-                  onClick={() => setView("announcements")}
-                  className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${view === "announcements" ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
-                >
-                  Announcements
-                </button>
-                <button
-                  onClick={() => setView("forms")}
-                  className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${view === "forms" ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
-                >
-                  Manage Forms
+                  All Domains
+                  <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded text-[10px]">
+                    {applicants.length}
+                  </span>
                 </button>
               </div>
 
