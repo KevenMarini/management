@@ -47,11 +47,24 @@ export default function TaskPage() {
     github: ""
   });
 
+  // Task Viewer State
+  const [allTasks, setAllTasks] = useState<any[]>([]);
+  const [selectedTaskDomain, setSelectedTaskDomain] = useState<string | null>(null);
+  const [selectedTechnicalTrack, setSelectedTechnicalTrack] = useState<string | null>(null);
+  const [selectedTask, setSelectedTask] = useState<any | null>(null);
+
   useEffect(() => {
     fetch("/api/roles")
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) setAllRoles(data);
+      })
+      .catch(console.error);
+
+    fetch("/api/tasks")
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) setAllTasks(data);
       })
       .catch(console.error);
   }, []);
@@ -497,29 +510,155 @@ export default function TaskPage() {
 
                 {activeTab === "tasks" && (
                   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col h-full">
-                    <h2 className="text-2xl font-bold mb-6">Domain Tasks</h2>
-                    <p className="text-muted-foreground mb-6">Complete the required tasks for each of your applied domains.</p>
-                    <div className="grid gap-4">
-                      {profile.domains.map((domain, i) => (
-                        <div key={i} className="p-6 rounded-2xl bg-white/5 border border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 group">
-                          <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-xl bg-amber-500/20 flex items-center justify-center text-amber-500">
-                              <ListTodo className="w-6 h-6" />
-                            </div>
-                            <div>
-                              <h3 className="font-bold text-lg">{domain} Task</h3>
-                              <p className="text-sm text-amber-400">Pending Completion</p>
-                            </div>
-                          </div>
-                          <button className="shrink-0 px-6 py-2 rounded-xl border border-white/10 hover:bg-white/10 transition-colors flex items-center gap-2 cursor-pointer">
-                            View Task <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                          </button>
+                    {!selectedTaskDomain ? (
+                      <>
+                        <h2 className="text-2xl font-bold mb-6">Domain Tasks</h2>
+                        <p className="text-muted-foreground mb-6">Complete the required tasks for each of your applied domains.</p>
+                        <div className="grid gap-4">
+                          {profile.domains.map((domain, i) => {
+                            const domainTasks = allTasks.filter(t => t.domain.toLowerCase() === domain.toLowerCase());
+                            return (
+                              <div key={i} className="p-6 rounded-2xl bg-white/5 border border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 group">
+                                <div className="flex items-center gap-4">
+                                  <div className="w-12 h-12 rounded-xl bg-amber-500/20 flex items-center justify-center text-amber-500">
+                                    <ListTodo className="w-6 h-6" />
+                                  </div>
+                                  <div>
+                                    <h3 className="font-bold text-lg">{domain}</h3>
+                                    <p className="text-sm text-amber-400">{domainTasks.length} {domainTasks.length === 1 ? 'Task' : 'Tasks'} Available</p>
+                                  </div>
+                                </div>
+                                <button 
+                                  onClick={() => {
+                                    setSelectedTaskDomain(domain);
+                                    setSelectedTechnicalTrack(null);
+                                    setSelectedTask(null);
+                                  }}
+                                  className="shrink-0 px-6 py-2 rounded-xl border border-white/10 hover:bg-white/10 transition-colors flex items-center gap-2 cursor-pointer"
+                                >
+                                  View Tasks <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                </button>
+                              </div>
+                            );
+                          })}
+                          {profile.domains.length === 0 && (
+                            <p className="text-muted-foreground p-6 bg-white/5 rounded-2xl border border-white/5 text-center">Apply for a domain to see your tasks.</p>
+                          )}
                         </div>
-                      ))}
-                      {profile.domains.length === 0 && (
-                        <p className="text-muted-foreground p-6 bg-white/5 rounded-2xl border border-white/5 text-center">Apply for a domain to see your tasks.</p>
-                      )}
-                    </div>
+                      </>
+                    ) : selectedTaskDomain.toLowerCase() === "technical" && !selectedTechnicalTrack ? (
+                      <div className="space-y-6">
+                        <button onClick={() => setSelectedTaskDomain(null)} className="text-muted-foreground hover:text-white flex items-center gap-2 mb-4">
+                          <ChevronRight className="w-4 h-4 rotate-180" /> Back to Domains
+                        </button>
+                        <h2 className="text-2xl font-bold">Select Your Technical Track</h2>
+                        <p className="text-muted-foreground">Please select which technical track you are completing tasks for.</p>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                          {["Frontend", "Backend", "Both"].map(track => (
+                            <button 
+                              key={track}
+                              onClick={() => setSelectedTechnicalTrack(track)}
+                              className="p-8 rounded-2xl glass border border-white/10 hover:border-primary/50 hover:bg-white/10 transition-all text-center cursor-pointer group"
+                            >
+                              <Briefcase className="w-8 h-8 text-primary mx-auto mb-4 group-hover:scale-110 transition-transform" />
+                              <h3 className="font-bold text-xl">{track}</h3>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ) : !selectedTask ? (
+                      <div className="space-y-6">
+                        <button 
+                          onClick={() => {
+                            if (selectedTaskDomain.toLowerCase() === "technical") setSelectedTechnicalTrack(null);
+                            else setSelectedTaskDomain(null);
+                          }} 
+                          className="text-muted-foreground hover:text-white flex items-center gap-2 mb-4"
+                        >
+                          <ChevronRight className="w-4 h-4 rotate-180" /> Back
+                        </button>
+                        <div className="flex items-center gap-3">
+                          <h2 className="text-2xl font-bold">{selectedTaskDomain} Tasks</h2>
+                          {selectedTechnicalTrack && <span className="px-3 py-1 rounded-lg bg-blue-500/20 text-blue-400 text-xs font-bold uppercase">{selectedTechnicalTrack}</span>}
+                        </div>
+                        <div className="grid gap-4">
+                          {allTasks
+                            .filter(t => t.domain.toLowerCase() === selectedTaskDomain.toLowerCase())
+                            .filter(t => {
+                              if (selectedTaskDomain.toLowerCase() !== "technical") return true;
+                              if (!t.technical_type) return true; // task applies to all
+                              if (t.technical_type.toLowerCase() === selectedTechnicalTrack?.toLowerCase()) return true;
+                              if (selectedTechnicalTrack?.toLowerCase() === "both") return true; // if user chose both, they see all
+                              if (t.technical_type.toLowerCase() === "both") return true; // if task is both, everyone sees it
+                              return false;
+                            })
+                            .map((task) => (
+                              <div key={task.id} className="p-6 rounded-2xl bg-white/5 border border-white/10 flex flex-col gap-4 group cursor-pointer hover:bg-white/10 transition-colors" onClick={() => setSelectedTask(task)}>
+                                <div>
+                                  <h3 className="font-bold text-xl mb-1">{task.name}</h3>
+                                  <p className="text-muted-foreground text-sm line-clamp-2">{task.description}</p>
+                                </div>
+                                <div className="flex items-center gap-4 mt-2">
+                                  <span className="text-xs font-bold text-primary px-3 py-1 bg-primary/10 rounded-lg">{task.questions?.length || 0} Questions</span>
+                                  <span className="text-sm font-medium flex items-center gap-1 group-hover:text-primary transition-colors ml-auto">
+                                    Start Task <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                          {allTasks.filter(t => t.domain.toLowerCase() === selectedTaskDomain.toLowerCase()).length === 0 && (
+                            <p className="text-muted-foreground p-6 bg-white/5 rounded-2xl border border-white/5 text-center">No tasks have been assigned for this domain yet.</p>
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-8 pb-8">
+                        <button onClick={() => setSelectedTask(null)} className="text-muted-foreground hover:text-white flex items-center gap-2">
+                          <ChevronRight className="w-4 h-4 rotate-180" /> Back to Tasks List
+                        </button>
+                        
+                        <div>
+                          <h2 className="text-3xl font-bold mb-2">{selectedTask.name}</h2>
+                          <p className="text-muted-foreground text-lg">{selectedTask.description}</p>
+                        </div>
+                        
+                        <div className="p-6 rounded-2xl bg-primary/5 border border-primary/20">
+                          <h3 className="font-bold text-primary mb-2 flex items-center gap-2"><Briefcase className="w-5 h-5"/> Instructions</h3>
+                          <p className="text-white/80 whitespace-pre-wrap leading-relaxed">{selectedTask.instructions}</p>
+                        </div>
+
+                        <div className="space-y-6">
+                          <h3 className="text-2xl font-bold border-b border-white/10 pb-4">Submission Form</h3>
+                          {selectedTask.questions?.map((q: any, i: number) => (
+                            <div key={q.id} className="space-y-3">
+                              <label className="text-sm font-medium text-white/90">
+                                <span className="text-primary font-bold mr-2">Q{i + 1}.</span> {q.question_text}
+                              </label>
+                              {q.answer_type === "text" ? (
+                                <textarea 
+                                  rows={4} 
+                                  placeholder="Type your answer here..."
+                                  className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 text-white resize-none"
+                                />
+                              ) : (
+                                <input 
+                                  type="url" 
+                                  placeholder="https://..."
+                                  className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 text-white"
+                                />
+                              )}
+                            </div>
+                          ))}
+                          {(!selectedTask.questions || selectedTask.questions.length === 0) && (
+                            <p className="text-muted-foreground italic">No submission questions required for this task.</p>
+                          )}
+                        </div>
+                        
+                        <button className="w-full md:w-auto px-8 py-4 rounded-xl bg-primary text-primary-foreground font-bold hover:bg-primary/90 transition-colors flex items-center justify-center gap-2">
+                          <CheckCircle2 className="w-5 h-5" /> Submit Task
+                        </button>
+                      </div>
+                    )}
                   </motion.div>
                 )}
               </div>

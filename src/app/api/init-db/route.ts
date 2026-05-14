@@ -63,9 +63,33 @@ export async function GET() {
       )
     `;
     
+    // 6. Create domain_tasks table
+    await sql`
+      CREATE TABLE IF NOT EXISTS domain_tasks (
+        id SERIAL PRIMARY KEY,
+        domain VARCHAR(100) NOT NULL,
+        technical_type VARCHAR(20),
+        name VARCHAR(255) NOT NULL,
+        description TEXT,
+        instructions TEXT,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+
+    // 7. Create task_questions table
+    await sql`
+      CREATE TABLE IF NOT EXISTS task_questions (
+        id SERIAL PRIMARY KEY,
+        task_id INTEGER REFERENCES domain_tasks(id) ON DELETE CASCADE,
+        question_text TEXT NOT NULL,
+        answer_type VARCHAR(20) NOT NULL,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+    
     return NextResponse.json({ 
       success: true, 
-      message: "Database schema synchronized successfully. Users table added." 
+      message: "Database schema synchronized successfully. Task tables added." 
     });
   } catch (error: any) {
     console.error("Migration error:", error);
