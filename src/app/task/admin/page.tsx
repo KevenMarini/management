@@ -319,10 +319,7 @@ export default function AdminDashboard() {
                 className={`w-full p-4 rounded-2xl flex items-center gap-3 transition-all ${activeTab === "task_view" ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20" : "text-muted-foreground hover:bg-white/5"}`}
               >
                 <Eye className="w-5 h-5" />
-                <span className="font-bold flex-1 text-left">Task View</span>
-                <span className="text-[10px] bg-white/10 px-1.5 py-0.5 rounded">
-                  {allSubmissions.filter(s => !s.status || s.status === 'pending').length}
-                </span>
+                <span className="font-bold">Task View</span>
               </button>
 
               <button 
@@ -330,21 +327,15 @@ export default function AdminDashboard() {
                 className={`w-full p-4 rounded-2xl flex items-center gap-3 transition-all ${activeTab === "accepted" ? "bg-green-500 text-white shadow-lg shadow-green-500/20" : "text-muted-foreground hover:bg-white/5"}`}
               >
                 <CheckCircle2 className="w-5 h-5" />
-                <span className="font-bold flex-1 text-left">Accepted List</span>
-                <span className="text-[10px] bg-white/10 px-1.5 py-0.5 rounded">
-                  {allSubmissions.filter(s => s.status === 'approved').length}
-                </span>
+                <span className="font-bold">Accepted List</span>
               </button>
 
               <button 
                 onClick={() => { setActiveTab("rejected"); setViewSelectedTask(null); setViewTaskDomain(null); setViewTaskTrack(null); setSubmissionFilter("rejected"); }} 
-                className={`w-full p-4 rounded-2xl flex items-center gap-3 transition-all ${activeTab === "rejected" ? "bg-red-500 text-white shadow-lg shadow-red-500/20" : "text-muted-foreground hover:bg-white/5"}`}
+                className={`w-full p-4 rounded-2xl flex items-center gap-3 transition-all ${activeTab === "rejected" ? "bg-red-500 text-white shadow-lg shadow-red-900/20" : "text-muted-foreground hover:bg-white/5"}`}
               >
                 <X className="w-5 h-5" />
-                <span className="font-bold flex-1 text-left">Rejected List</span>
-                <span className="text-[10px] bg-white/10 px-1.5 py-0.5 rounded">
-                  {allSubmissions.filter(s => s.status === 'rejected').length}
-                </span>
+                <span className="font-bold">Rejected List</span>
               </button>
         </div>
 
@@ -585,10 +576,13 @@ export default function AdminDashboard() {
                     <p className="text-muted-foreground mb-8">Select a domain to view applicant submissions.</p>
                   <div className="grid gap-4">
                     {roles.map(r => {
+                      const domainApplicants = applicants.filter(a => a.domain === r.title);
                       const domainSubmissions = allSubmissions.filter(s => s.domain === r.title);
-                      const pendingCount = domainSubmissions.filter(s => !s.status || s.status === 'pending').length;
+                      
                       const acceptedCount = domainSubmissions.filter(s => s.status === 'approved').length;
                       const rejectedCount = domainSubmissions.filter(s => s.status === 'rejected').length;
+                      // Pending includes anyone not yet accepted or rejected
+                      const pendingCount = Math.max(0, domainApplicants.length - acceptedCount - rejectedCount);
                       
                       const countToDisplay = activeTab === "task_view" ? pendingCount : 
                                            activeTab === "accepted" ? acceptedCount : rejectedCount;
@@ -602,11 +596,7 @@ export default function AdminDashboard() {
                       return (
                         <div key={r.title} onClick={() => setViewTaskDomain(r.title)} className="p-6 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between group cursor-pointer hover:bg-white/10 hover:border-primary/50 transition-all">
                           <div className="flex items-center gap-4">
-                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                              activeTab === "task_view" ? "bg-amber-500/20 text-amber-400" :
-                              activeTab === "accepted" ? "bg-green-500/20 text-green-400" :
-                              "bg-red-500/20 text-red-400"
-                            }`}>
+                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${badgeColor}`}>
                               {activeTab === "task_view" ? <Eye className="w-6 h-6" /> : 
                                activeTab === "accepted" ? <CheckCircle2 className="w-6 h-6" /> : <X className="w-6 h-6" />}
                             </div>
@@ -615,11 +605,11 @@ export default function AdminDashboard() {
                               <div className="text-[10px] text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 mt-1">
                                 <span className="flex items-center gap-1.5">
                                   <Users className="w-3 h-3 text-primary" />
-                                  {applicants.filter(a => a.domain === r.title).length} Total Applicants
+                                  {domainApplicants.length} Total Applicants
                                 </span>
                                 <span className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full ${badgeColor}`}>
                                   <span className={`w-1 h-1 rounded-full ${activeTab === 'task_view' ? 'bg-amber-500' : activeTab === 'accepted' ? 'bg-green-500' : 'bg-red-500'}`} />
-                                  {countToDisplay} {label} Submissions
+                                  {countToDisplay} {label}
                                 </span>
                               </div>
                             </div>
