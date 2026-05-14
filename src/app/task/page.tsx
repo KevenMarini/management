@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import { motion, AnimatePresence } from "framer-motion";
-import { LogIn, Loader2, CheckCircle2, User, Phone, Mail, Menu, X, PlusCircle, LayoutList, ListTodo, Briefcase, ChevronRight, PenTool } from "lucide-react";
+import { LogIn, Loader2, CheckCircle2, User, Phone, Mail, Menu, X, PlusCircle, LayoutList, ListTodo, Briefcase, ChevronRight, PenTool, Upload, Trash2 } from "lucide-react";
 
 export default function TaskPage() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -55,6 +55,24 @@ export default function TaskPage() {
   const [completedTasks, setCompletedTasks] = useState<number[]>([]);
   const [taskAnswers, setTaskAnswers] = useState<Record<number, string>>({});
   const [isSubmittingTask, setIsSubmittingTask] = useState(false);
+  const [uploadingFile, setUploadingFile] = useState<number | null>(null);
+
+  const handleFileUpload = async (questionId: number, file: File) => {
+    setUploadingFile(questionId);
+    try {
+      const res = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}`, {
+        method: "POST",
+        body: file,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Upload failed");
+      setTaskAnswers({ ...taskAnswers, [questionId]: data.url });
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setUploadingFile(null);
+    }
+  };
 
   useEffect(() => {
     fetch("/api/roles")
@@ -692,7 +710,7 @@ export default function TaskPage() {
                                   disabled={completedTasks.includes(selectedTask.id)}
                                   className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 text-white resize-none disabled:opacity-50"
                                 />
-                              ) : (
+                              ) : q.answer_type === "link" ? (
                                 <input 
                                   type="url" 
                                   value={taskAnswers[q.id] || ""}
@@ -701,6 +719,43 @@ export default function TaskPage() {
                                   disabled={completedTasks.includes(selectedTask.id)}
                                   className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 text-white disabled:opacity-50"
                                 />
+                              ) : (
+                                <div className="space-y-4">
+                                  {!taskAnswers[q.id] ? (
+                                    <div className="relative">
+                                      <input 
+                                        type="file" 
+                                        onChange={e => e.target.files?.[0] && handleFileUpload(q.id, e.target.files[0])}
+                                        disabled={completedTasks.includes(selectedTask.id) || uploadingFile === q.id}
+                                        className="hidden"
+                                        id={`file-${q.id}`}
+                                      />
+                                      <label 
+                                        htmlFor={`file-${q.id}`}
+                                        className="w-full flex flex-col items-center justify-center gap-3 p-8 rounded-2xl border-2 border-dashed border-white/10 bg-white/5 hover:bg-white/10 hover:border-primary/50 transition-all cursor-pointer group"
+                                      >
+                                        {uploadingFile === q.id ? <Loader2 className="w-8 h-8 animate-spin text-primary" /> : <Upload className="w-8 h-8 text-muted-foreground group-hover:text-primary transition-colors" />}
+                                        <div className="text-center">
+                                          <p className="font-bold">{uploadingFile === q.id ? "Uploading..." : "Click to Upload File"}</p>
+                                          <p className="text-xs text-muted-foreground mt-1">Maximum file size: 5MB</p>
+                                        </div>
+                                      </label>
+                                    </div>
+                                  ) : (
+                                    <div className="flex items-center justify-between p-4 rounded-xl bg-green-500/10 border border-green-500/20">
+                                      <div className="flex items-center gap-3">
+                                        <CheckCircle2 className="w-5 h-5 text-green-400" />
+                                        <div className="overflow-hidden">
+                                          <p className="text-sm font-bold text-green-400">File Uploaded Successfully</p>
+                                          <a href={taskAnswers[q.id]} target="_blank" className="text-xs text-green-400/70 hover:underline truncate block max-w-xs">{taskAnswers[q.id]}</a>
+                                        </div>
+                                      </div>
+                                      {!completedTasks.includes(selectedTask.id) && (
+                                        <button onClick={() => setTaskAnswers({...taskAnswers, [q.id]: ""})} className="p-2 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors"><Trash2 className="w-4 h-4"/></button>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
                               )}
                             </div>
                           ))}

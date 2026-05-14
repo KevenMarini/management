@@ -36,7 +36,7 @@ type Task = {
 type TaskQuestion = {
   id: number;
   question_text: string;
-  answer_type: string;
+  answer_type: "text" | "link" | "file";
 };
 
 export default function AdminDashboard() {
@@ -515,8 +515,10 @@ export default function AdminDashboard() {
                             </div>
                             <div className="sm:w-48 space-y-2">
                               <label className="text-xs text-muted-foreground uppercase tracking-wider">Answer Type</label>
-                              <select value={q.type} onChange={e => { const n = [...questions]; n[i].type = e.target.value as "text" | "link"; setQuestions(n); }} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2 outline-none text-white appearance-none">
-                                <option value="text">Text Response</option><option value="link">Link (URL)</option>
+                              <select value={q.type} onChange={e => { const n = [...questions]; n[i].type = e.target.value as "text" | "link" | "file"; setQuestions(n); }} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2 outline-none text-white appearance-none">
+                                <option value="text">Text Response</option>
+                                <option value="link">Link (URL)</option>
+                                <option value="file">File Upload</option>
                               </select>
                             </div>
                           </div>
