@@ -23,8 +23,22 @@ import { useState, useEffect } from "react";
 
 export default function LandingPage() {
   const [roles, setRoles] = useState<any[]>([]);
+  const [activeSlide, setActiveSlide] = useState(0);
 
   useEffect(() => {
+    const el = document.getElementById('roles-slider');
+    if (!el) return;
+
+    const handleScroll = () => {
+      const scrollLeft = el.scrollLeft;
+      const width = el.offsetWidth;
+      const index = Math.round(scrollLeft / width);
+      setActiveSlide(index);
+    };
+
+    el.addEventListener('scroll', handleScroll);
+    return () => el.removeEventListener('scroll', handleScroll);
+  }, [roles]);
     const fetchRoles = async () => {
       try {
         const res = await fetch("/api/roles");
@@ -199,6 +213,23 @@ export default function LandingPage() {
           >
             <ArrowRight className="w-6 h-6" />
           </button>
+        </div>
+
+        {/* Dot Indicators */}
+        <div className="flex justify-center gap-3 mt-8">
+          {roles.length > 0 && Array.from({ length: Math.ceil(roles.length / (typeof window !== 'undefined' && window.innerWidth < 768 ? 1 : 2)) }).map((_, i) => (
+            <button
+              key={i}
+              onClick={() => {
+                const el = document.getElementById('roles-slider');
+                if (el) {
+                  const width = el.offsetWidth;
+                  el.scrollTo({ left: i * width, behavior: 'smooth' });
+                }
+              }}
+              className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${activeSlide === i ? "bg-primary w-8" : "bg-white/20 hover:bg-white/40"}`}
+            />
+          ))}
         </div>
       </section>
 
