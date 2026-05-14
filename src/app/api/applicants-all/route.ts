@@ -7,7 +7,7 @@ export async function GET() {
     const applicants = await sql`
       SELECT 
         a.id,
-        a.name, 
+        FIRST_VALUE(a.name) OVER (PARTITION BY a.email ORDER BY a.created_at ASC) as name, 
         a.email, 
         a.phone, 
         a.college, 

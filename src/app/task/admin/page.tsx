@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Loader2, Users, Calendar, Mail, Phone, Briefcase, ExternalLink, ChevronDown, ChevronUp, CheckCircle2, User } from "lucide-react";
+import { Search, Loader2, Users, Calendar, Mail, Phone, Briefcase, ExternalLink, ChevronDown, ChevronUp, CheckCircle2, User, Trash2 } from "lucide-react";
 
 type Applicant = {
   id: number;
@@ -41,6 +41,24 @@ export default function AdminDashboard() {
         setLoading(false);
       });
   }, []);
+
+  const handleDelete = async (id: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm("Are you sure you want to delete this application? This action cannot be undone.")) return;
+    
+    try {
+      const res = await fetch("/api/delete-applicant", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id })
+      });
+      if (!res.ok) throw new Error("Failed to delete application");
+      setApplicants(applicants.filter(a => a.id !== id));
+      if (expandedId === id) setExpandedId(null);
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
 
   const filtered = applicants.filter(a => 
     a.name?.toLowerCase().includes(search.toLowerCase()) || 
@@ -121,7 +139,14 @@ export default function AdminDashboard() {
                           <CheckCircle2 className="w-3 h-3" /> Profile Updated
                         </div>
                       )}
-                      <div className="text-muted-foreground">
+                      <button 
+                        onClick={(e) => handleDelete(applicant.id, e)}
+                        className="p-2 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors"
+                        title="Delete Application"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                      <div className="text-muted-foreground ml-2">
                         {expandedId === applicant.id ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
                       </div>
                     </div>

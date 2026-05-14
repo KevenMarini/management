@@ -22,6 +22,7 @@ export async function POST(request: Request) {
     const applicants = await sql`
       SELECT name, email, phone, domain FROM applicants 
       WHERE email = ${user.email} OR phone = ${user.phone}
+      ORDER BY created_at ASC
     `;
 
     const profileName = applicants.length > 0 ? applicants[0].name : "Unknown";
