@@ -95,3 +95,22 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
   }
 }
+
+// DELETE to remove a specific submission
+export async function DELETE(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const submissionId = searchParams.get('id');
+
+    if (!submissionId) {
+      return NextResponse.json({ error: "Submission ID is required" }, { status: 400 });
+    }
+
+    await sql`DELETE FROM task_submissions WHERE id = ${submissionId}`;
+
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    console.error("Delete submission error:", error);
+    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
+  }
+}

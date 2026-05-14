@@ -118,11 +118,21 @@ export default function AdminDashboard() {
   };
 
   const handleDeleteTask = async (id: number) => {
-    if (!confirm("Are you sure you want to delete this task?")) return;
+    if (!confirm("Are you sure you want to delete this task? This cannot be undone.")) return;
     try {
       const res = await fetch("/api/tasks?id=" + id, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed to delete task");
       setTasks(tasks.filter(t => t.id !== id));
+    } catch (err: any) { alert(err.message); }
+  };
+
+  const handleDeleteSubmission = async (id: number) => {
+    if (!confirm("Are you sure you want to delete this applicant's submission? They will be able to submit again.")) return;
+    try {
+      const res = await fetch("/api/tasks/submissions?id=" + id, { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed to delete submission");
+      setTaskSubmissions(taskSubmissions.filter(s => s.submission_id !== id));
+      if (expandedSubmission === id) setExpandedSubmission(null);
     } catch (err: any) { alert(err.message); }
   };
 
@@ -443,17 +453,9 @@ export default function AdminDashboard() {
                   <h2 className="text-3xl font-bold mb-6">{viewTaskDomain} Tasks</h2>
                   <div className="grid gap-4">
                     {tasks.filter(t => t.domain.toLowerCase() === viewTaskDomain.toLowerCase() && (!viewTaskTrack || t.technical_type?.toLowerCase() === viewTaskTrack.toLowerCase())).map(task => (
-                      <div key={task.id} onClick={() => { setViewSelectedTask(task); fetchSubmissions(task.id); }} className="glass p-6 rounded-2xl border border-white/5 cursor-pointer hover:bg-white/10 transition-colors group flex items-center justify-between">
-                        <div>
-                          <h3 className="text-xl font-bold mb-2 group-hover:text-primary transition-colors">{task.name}</h3>
-                          <p className="text-muted-foreground text-sm">{task.description}</p>
-                        </div>
-                        <button 
-                          onClick={(e) => { e.stopPropagation(); handleDeleteTask(task.id); }} 
-                          className="px-4 py-2 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors flex items-center gap-2 shrink-0 opacity-0 group-hover:opacity-100"
-                        >
-                          <Trash2 className="w-4 h-4" /> Delete
-                        </button>
+                      <div key={task.id} onClick={() => { setViewSelectedTask(task); fetchSubmissions(task.id); }} className="glass p-6 rounded-2xl border border-white/5 cursor-pointer hover:bg-white/10 transition-colors group">
+                        <h3 className="text-xl font-bold mb-2 group-hover:text-primary transition-colors">{task.name}</h3>
+                        <p className="text-muted-foreground text-sm">{task.description}</p>
                       </div>
                     ))}
                     {tasks.filter(t => t.domain.toLowerCase() === viewTaskDomain.toLowerCase()).length === 0 && (
@@ -463,18 +465,7 @@ export default function AdminDashboard() {
                 </>
               ) : (
                 <div className="space-y-6">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
-                    <button onClick={() => { setViewSelectedTask(null); setTaskSubmissions([]); setExpandedSubmission(null); }} className="text-muted-foreground hover:text-white flex items-center gap-2"><ChevronRight className="w-4 h-4 rotate-180" /> Back to Tasks</button>
-                    <button 
-                      onClick={() => {
-                        handleDeleteTask(viewSelectedTask.id);
-                        setViewSelectedTask(null);
-                      }} 
-                      className="px-4 py-2 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors flex items-center gap-2 text-sm font-bold"
-                    >
-                      <Trash2 className="w-4 h-4" /> Delete This Task
-                    </button>
-                  </div>
+                  <button onClick={() => { setViewSelectedTask(null); setTaskSubmissions([]); setExpandedSubmission(null); }} className="text-muted-foreground hover:text-white flex items-center gap-2 mb-4"><ChevronRight className="w-4 h-4 rotate-180" /> Back to Tasks</button>
                   <h2 className="text-3xl font-bold">{viewSelectedTask.name} - Submissions</h2>
                   <p className="text-muted-foreground">Viewing all applicant answers for this task.</p>
                   
@@ -497,15 +488,23 @@ export default function AdminDashboard() {
                             {expandedSubmission === sub.submission_id && (
                               <motion.div initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }} className="overflow-hidden border-t border-white/5 bg-black/20">
                                 <div className="p-6 space-y-6">
-                                  {sub.answers.map((ans: any, i: number) => (
-                                    <div key={i}>
-                                      <p className="font-medium text-white/90 mb-2"><span className="text-primary font-bold mr-2">Q{i+1}.</span>{ans.question_text}</p>
-                                      <div className="p-4 rounded-xl bg-white/5 border border-white/5 text-muted-foreground whitespace-pre-wrap">
-                                        {ans.answer_text.startsWith("http") ? <a href={ans.answer_text} target="_blank" className="text-blue-400 hover:underline flex items-center gap-1"><Link2 className="w-4 h-4"/> {ans.answer_text}</a> : ans.answer_text}
+                                    {sub.answers.map((ans: any, i: number) => (
+                                      <div key={i}>
+                                        <p className="font-medium text-white/90 mb-2"><span className="text-primary font-bold mr-2">Q{i+1}.</span>{ans.question_text}</p>
+                                        <div className="p-4 rounded-xl bg-white/5 border border-white/5 text-muted-foreground whitespace-pre-wrap">
+                                          {ans.answer_text.startsWith("http") ? <a href={ans.answer_text} target="_blank" className="text-blue-400 hover:underline flex items-center gap-1"><Link2 className="w-4 h-4"/> {ans.answer_text}</a> : ans.answer_text}
+                                        </div>
                                       </div>
+                                    ))}
+                                    {sub.answers.length === 0 && <p className="text-muted-foreground italic">No answers provided.</p>}
+                                    <div className="pt-4 border-t border-white/5 flex justify-end">
+                                      <button 
+                                        onClick={() => handleDeleteSubmission(sub.submission_id)}
+                                        className="px-4 py-2 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors flex items-center gap-2 text-sm font-bold"
+                                      >
+                                        <Trash2 className="w-4 h-4" /> Delete Applicant's Submission
+                                      </button>
                                     </div>
-                                  ))}
-                                  {sub.answers.length === 0 && <p className="text-muted-foreground italic">No answers provided.</p>}
                                 </div>
                               </motion.div>
                             )}
