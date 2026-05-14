@@ -52,6 +52,9 @@ export default function TaskPage() {
   const [selectedTaskDomain, setSelectedTaskDomain] = useState<string | null>(null);
   const [selectedTechnicalTrack, setSelectedTechnicalTrack] = useState<string | null>(null);
   const [selectedTask, setSelectedTask] = useState<any | null>(null);
+  const [completedTasks, setCompletedTasks] = useState<number[]>([]);
+  const [taskAnswers, setTaskAnswers] = useState<Record<number, string>>({});
+  const [isSubmittingTask, setIsSubmittingTask] = useState(false);
 
   useEffect(() => {
     fetch("/api/roles")
@@ -96,6 +99,13 @@ export default function TaskPage() {
           setIsProfileFilled(true);
         }
       }
+      
+      // Fetch completed tasks
+      fetch(`/api/tasks/submissions?userid=${userid}`)
+        .then(r => r.json())
+        .then(d => { if (Array.isArray(d)) setCompletedTasks(d); })
+        .catch(console.error);
+
       setVerifyName(data.name);
       setVerifyPhone(data.phone);
       setVerifyEmail(data.email);
@@ -546,7 +556,7 @@ export default function TaskPage() {
                           )}
                         </div>
                       </>
-                    ) : selectedTaskDomain.toLowerCase() === "technical" && !selectedTechnicalTrack ? (
+                    ) : (selectedTaskDomain.toLowerCase().includes("develop") || selectedTaskDomain.toLowerCase() === "technical") && !selectedTechnicalTrack ? (
                       <div className="space-y-6">
                         <button onClick={() => setSelectedTaskDomain(null)} className="text-muted-foreground hover:text-white flex items-center gap-2 mb-4">
                           <ChevronRight className="w-4 h-4 rotate-180" /> Back to Domains
@@ -570,7 +580,7 @@ export default function TaskPage() {
                       <div className="space-y-6">
                         <button 
                           onClick={() => {
-                            if (selectedTaskDomain.toLowerCase() === "technical") setSelectedTechnicalTrack(null);
+                            if (selectedTaskDomain.toLowerCase().includes("develop") || selectedTaskDomain.toLowerCase() === "technical") setSelectedTechnicalTrack(null);
                             else setSelectedTaskDomain(null);
                           }} 
                           className="text-muted-foreground hover:text-white flex items-center gap-2 mb-4"
@@ -585,27 +595,34 @@ export default function TaskPage() {
                           {allTasks
                             .filter(t => t.domain.toLowerCase() === selectedTaskDomain.toLowerCase())
                             .filter(t => {
-                              if (selectedTaskDomain.toLowerCase() !== "technical") return true;
+                              const isDev = selectedTaskDomain.toLowerCase().includes("develop") || selectedTaskDomain.toLowerCase() === "technical";
+                              if (!isDev) return true;
                               if (!t.technical_type) return true; // task applies to all
                               if (t.technical_type.toLowerCase() === selectedTechnicalTrack?.toLowerCase()) return true;
                               if (selectedTechnicalTrack?.toLowerCase() === "both") return true; // if user chose both, they see all
                               if (t.technical_type.toLowerCase() === "both") return true; // if task is both, everyone sees it
                               return false;
                             })
-                            .map((task) => (
-                              <div key={task.id} className="p-6 rounded-2xl bg-white/5 border border-white/10 flex flex-col gap-4 group cursor-pointer hover:bg-white/10 transition-colors" onClick={() => setSelectedTask(task)}>
-                                <div>
-                                  <h3 className="font-bold text-xl mb-1">{task.name}</h3>
-                                  <p className="text-muted-foreground text-sm line-clamp-2">{task.description}</p>
+                            .map((task) => {
+                              const isCompleted = completedTasks.includes(task.id);
+                              return (
+                                <div key={task.id} className="p-6 rounded-2xl bg-white/5 border border-white/10 flex flex-col gap-4 group cursor-pointer hover:bg-white/10 transition-colors" onClick={() => setSelectedTask(task)}>
+                                  <div>
+                                    <div className="flex items-center justify-between mb-1">
+                                      <h3 className="font-bold text-xl">{task.name}</h3>
+                                      {isCompleted && <span className="px-3 py-1 rounded-full bg-green-500/20 text-green-400 text-xs font-bold uppercase tracking-wider flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Completed</span>}
+                                    </div>
+                                    <p className="text-muted-foreground text-sm line-clamp-2">{task.description}</p>
+                                  </div>
+                                  <div className="flex items-center gap-4 mt-2">
+                                    <span className="text-xs font-bold text-primary px-3 py-1 bg-primary/10 rounded-lg">{task.questions?.length || 0} Questions</span>
+                                    <span className="text-sm font-medium flex items-center gap-1 group-hover:text-primary transition-colors ml-auto">
+                                      {isCompleted ? "View Task" : "Start Task"} <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                    </span>
+                                  </div>
                                 </div>
-                                <div className="flex items-center gap-4 mt-2">
-                                  <span className="text-xs font-bold text-primary px-3 py-1 bg-primary/10 rounded-lg">{task.questions?.length || 0} Questions</span>
-                                  <span className="text-sm font-medium flex items-center gap-1 group-hover:text-primary transition-colors ml-auto">
-                                    Start Task <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                                  </span>
-                                </div>
-                              </div>
-                            ))}
+                              );
+                            })}
                           {allTasks.filter(t => t.domain.toLowerCase() === selectedTaskDomain.toLowerCase()).length === 0 && (
                             <p className="text-muted-foreground p-6 bg-white/5 rounded-2xl border border-white/5 text-center">No tasks have been assigned for this domain yet.</p>
                           )}
@@ -637,14 +654,20 @@ export default function TaskPage() {
                               {q.answer_type === "text" ? (
                                 <textarea 
                                   rows={4} 
+                                  value={taskAnswers[q.id] || ""}
+                                  onChange={e => setTaskAnswers({...taskAnswers, [q.id]: e.target.value})}
                                   placeholder="Type your answer here..."
-                                  className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 text-white resize-none"
+                                  disabled={completedTasks.includes(selectedTask.id)}
+                                  className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 text-white resize-none disabled:opacity-50"
                                 />
                               ) : (
                                 <input 
                                   type="url" 
+                                  value={taskAnswers[q.id] || ""}
+                                  onChange={e => setTaskAnswers({...taskAnswers, [q.id]: e.target.value})}
                                   placeholder="https://..."
-                                  className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 text-white"
+                                  disabled={completedTasks.includes(selectedTask.id)}
+                                  className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 text-white disabled:opacity-50"
                                 />
                               )}
                             </div>
@@ -654,9 +677,37 @@ export default function TaskPage() {
                           )}
                         </div>
                         
-                        <button className="w-full md:w-auto px-8 py-4 rounded-xl bg-primary text-primary-foreground font-bold hover:bg-primary/90 transition-colors flex items-center justify-center gap-2">
-                          <CheckCircle2 className="w-5 h-5" /> Submit Task
-                        </button>
+                        {!completedTasks.includes(selectedTask.id) ? (
+                          <button 
+                            onClick={async () => {
+                              setIsSubmittingTask(true);
+                              try {
+                                const res = await fetch("/api/tasks/submissions", {
+                                  method: "POST",
+                                  headers: { "Content-Type": "application/json" },
+                                  body: JSON.stringify({ userid, password, taskId: selectedTask.id, answers: taskAnswers })
+                                });
+                                const data = await res.json();
+                                if (!res.ok) throw new Error(data.error || "Failed to submit task");
+                                setCompletedTasks([...completedTasks, selectedTask.id]);
+                                alert("Task submitted successfully!");
+                              } catch (err: any) {
+                                alert(err.message);
+                              } finally {
+                                setIsSubmittingTask(false);
+                              }
+                            }}
+                            disabled={isSubmittingTask}
+                            className="w-full md:w-auto px-8 py-4 rounded-xl bg-primary text-primary-foreground font-bold hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                          >
+                            {isSubmittingTask ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircle2 className="w-5 h-5" />}
+                            Submit Task
+                          </button>
+                        ) : (
+                          <div className="w-full md:w-auto px-8 py-4 rounded-xl bg-green-500/10 text-green-400 font-bold border border-green-500/20 flex items-center justify-center gap-2 cursor-not-allowed">
+                            <CheckCircle2 className="w-5 h-5" /> Task Completed
+                          </div>
+                        )}
                       </div>
                     )}
                   </motion.div>

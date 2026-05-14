@@ -86,6 +86,27 @@ export async function GET() {
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       )
     `;
+
+    // 8. Create task_submissions table
+    await sql`
+      CREATE TABLE IF NOT EXISTS task_submissions (
+        id SERIAL PRIMARY KEY,
+        task_id INTEGER REFERENCES domain_tasks(id) ON DELETE CASCADE,
+        userid VARCHAR(100) NOT NULL,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(task_id, userid)
+      )
+    `;
+
+    // 9. Create task_answers table
+    await sql`
+      CREATE TABLE IF NOT EXISTS task_answers (
+        id SERIAL PRIMARY KEY,
+        submission_id INTEGER REFERENCES task_submissions(id) ON DELETE CASCADE,
+        question_id INTEGER REFERENCES task_questions(id) ON DELETE CASCADE,
+        answer_text TEXT NOT NULL
+      )
+    `;
     
     return NextResponse.json({ 
       success: true, 
