@@ -538,12 +538,10 @@ export default function TaskPage() {
                                   </div>
                                   <div>
                                     <h3 className="font-bold text-lg">{domain}</h3>
-                                    <p className="text-sm text-amber-400 font-medium mt-1">
-                                      {isDev ? (
-                                        `${completedCount} Task${completedCount === 1 ? '' : 's'} Completed`
-                                      ) : (
-                                        `${completedCount} / ${domainTasks.length} Task${domainTasks.length === 1 ? '' : 's'} Completed`
-                                      )}
+                                    <p className="text-sm text-amber-400 font-medium mt-1 flex items-center gap-2">
+                                      <span>{domainTasks.length} Task{domainTasks.length === 1 ? '' : 's'} Available</span>
+                                      <span className="text-white/20">•</span>
+                                      <span className="text-green-400">{completedCount} Completed</span>
                                     </p>
                                   </div>
                                 </div>
