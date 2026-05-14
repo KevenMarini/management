@@ -104,9 +104,13 @@ export async function GET() {
         id SERIAL PRIMARY KEY,
         submission_id INTEGER REFERENCES task_submissions(id) ON DELETE CASCADE,
         question_id INTEGER REFERENCES task_questions(id) ON DELETE CASCADE,
-        answer_text TEXT NOT NULL
+        answer_text TEXT NOT NULL,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       )
     `;
+
+    // 12. Add status column to task_submissions
+    await sql`ALTER TABLE task_submissions ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'pending'`;
     
     return NextResponse.json({ 
       success: true, 

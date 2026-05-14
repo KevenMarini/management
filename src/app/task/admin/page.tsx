@@ -71,6 +71,7 @@ export default function AdminDashboard() {
   const [taskSubmissions, setTaskSubmissions] = useState<any[]>([]);
   const [loadingSubmissions, setLoadingSubmissions] = useState(false);
   const [expandedSubmission, setExpandedSubmission] = useState<number | null>(null);
+  const [submissionFilter, setSubmissionFilter] = useState<"pending" | "approved" | "rejected">("pending");
 
   useEffect(() => {
     fetch("/api/applicants-all")
@@ -132,6 +133,20 @@ export default function AdminDashboard() {
       const res = await fetch("/api/tasks/submissions?id=" + id, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed to delete submission");
       setTaskSubmissions(taskSubmissions.filter(s => s.submission_id !== id));
+      if (expandedSubmission === id) setExpandedSubmission(null);
+    } catch (err: any) { alert(err.message); }
+  };
+
+  const handleUpdateSubmissionStatus = async (id: number, status: string) => {
+    try {
+      const res = await fetch("/api/tasks/submissions", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ submissionId: id, status })
+      });
+      if (!res.ok) throw new Error("Failed to update status");
+      
+      setTaskSubmissions(taskSubmissions.map(s => s.submission_id === id ? { ...s, status } : s));
       if (expandedSubmission === id) setExpandedSubmission(null);
     } catch (err: any) { alert(err.message); }
   };
@@ -467,12 +482,22 @@ export default function AdminDashboard() {
                 <div className="space-y-6">
                   <button onClick={() => { setViewSelectedTask(null); setTaskSubmissions([]); setExpandedSubmission(null); }} className="text-muted-foreground hover:text-white flex items-center gap-2 mb-4"><ChevronRight className="w-4 h-4 rotate-180" /> Back to Tasks</button>
                   <h2 className="text-3xl font-bold">{viewSelectedTask.name} - Submissions</h2>
-                  <p className="text-muted-foreground">Viewing all applicant answers for this task.</p>
+                  <div className="flex items-center gap-4 border-b border-white/10 pb-4">
+                    <button onClick={() => setSubmissionFilter("pending")} className={`px-4 py-2 rounded-xl font-bold transition-all ${submissionFilter === 'pending' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-white/5'}`}>
+                      Pending ({taskSubmissions.filter(s => !s.status || s.status === 'pending').length})
+                    </button>
+                    <button onClick={() => setSubmissionFilter("approved")} className={`px-4 py-2 rounded-xl font-bold transition-all ${submissionFilter === 'approved' ? 'bg-green-500 text-white' : 'text-muted-foreground hover:bg-white/5'}`}>
+                      Approved ({taskSubmissions.filter(s => s.status === 'approved').length})
+                    </button>
+                    <button onClick={() => setSubmissionFilter("rejected")} className={`px-4 py-2 rounded-xl font-bold transition-all ${submissionFilter === 'rejected' ? 'bg-red-500 text-white' : 'text-muted-foreground hover:bg-white/5'}`}>
+                      Rejected ({taskSubmissions.filter(s => s.status === 'rejected').length})
+                    </button>
+                  </div>
                   
                   {loadingSubmissions ? <div className="py-10 flex justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary"/></div> : 
-                    taskSubmissions.length === 0 ? <p className="glass p-6 text-center text-muted-foreground rounded-2xl">No one has submitted answers for this task yet.</p> :
+                    taskSubmissions.filter(s => (submissionFilter === 'pending' ? (!s.status || s.status === 'pending') : s.status === submissionFilter)).length === 0 ? <p className="glass p-6 text-center text-muted-foreground rounded-2xl">No submissions found in this list.</p> :
                     <div className="space-y-4">
-                      {taskSubmissions.map(sub => (
+                      {taskSubmissions.filter(s => (submissionFilter === 'pending' ? (!s.status || s.status === 'pending') : s.status === submissionFilter)).map(sub => (
                         <div key={sub.submission_id} className="glass rounded-2xl border border-white/5 overflow-hidden">
                           <div onClick={() => setExpandedSubmission(expandedSubmission === sub.submission_id ? null : sub.submission_id)} className="p-6 flex items-center justify-between cursor-pointer hover:bg-white/5 transition-colors">
                             <div>
@@ -497,7 +522,23 @@ export default function AdminDashboard() {
                                       </div>
                                     ))}
                                     {sub.answers.length === 0 && <p className="text-muted-foreground italic">No answers provided.</p>}
-                                    <div className="pt-4 border-t border-white/5 flex justify-end">
+                                    <div className="pt-4 border-t border-white/5 flex flex-wrap gap-2 justify-end">
+                                      {submissionFilter === 'pending' && (
+                                        <>
+                                          <button 
+                                            onClick={() => handleUpdateSubmissionStatus(sub.submission_id, 'approved')}
+                                            className="px-4 py-2 rounded-xl bg-green-500/10 text-green-500 hover:bg-green-500/20 transition-colors flex items-center gap-2 text-sm font-bold"
+                                          >
+                                            <CheckCircle2 className="w-4 h-4" /> Accept
+                                          </button>
+                                          <button 
+                                            onClick={() => handleUpdateSubmissionStatus(sub.submission_id, 'rejected')}
+                                            className="px-4 py-2 rounded-xl bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 transition-colors flex items-center gap-2 text-sm font-bold"
+                                          >
+                                            <X className="w-4 h-4" /> Reject
+                                          </button>
+                                        </>
+                                      )}
                                       <button 
                                         onClick={() => handleDeleteSubmission(sub.submission_id)}
                                         className="px-4 py-2 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors flex items-center gap-2 text-sm font-bold"

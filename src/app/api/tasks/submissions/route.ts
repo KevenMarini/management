@@ -66,7 +66,7 @@ export async function GET(request: Request) {
 
     // Fetch all submissions for a specific task
     const submissions = await sql`
-      SELECT s.id as submission_id, s.created_at, u.userid, 
+      SELECT s.id as submission_id, s.created_at, s.status, u.userid, 
              (SELECT a.name FROM applicants a WHERE a.email = u.email ORDER BY a.created_at ASC LIMIT 1) as user_name
       FROM task_submissions s
       JOIN users u ON s.userid = u.userid
@@ -92,6 +92,24 @@ export async function GET(request: Request) {
     return NextResponse.json(result);
   } catch (error: any) {
     console.error("Fetch submissions error:", error);
+    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
+  }
+}
+
+// PATCH to update the status of a specific submission
+export async function PATCH(request: Request) {
+  try {
+    const { submissionId, status } = await request.json();
+
+    if (!submissionId || !status) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
+
+    await sql`UPDATE task_submissions SET status = ${status} WHERE id = ${submissionId}`;
+
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    console.error("Update submission error:", error);
     return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
   }
 }
