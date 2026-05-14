@@ -317,8 +317,8 @@ export default function AdminDashboard() {
                   <button onClick={() => setManageTaskDomain(null)} className="text-muted-foreground hover:text-white flex items-center gap-2 mb-4"><ChevronRight className="w-4 h-4 rotate-180" /> Back to Domains</button>
                   <h2 className="text-3xl font-bold mb-2">{manageTaskDomain} - Select Track</h2>
                   <p className="text-muted-foreground mb-6">Which track are you managing tasks for?</p>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {["Frontend", "Backend", "Both"].map(track => (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {["Frontend", "Backend"].map(track => (
                       <button key={track} onClick={() => setManageTaskTrack(track)} className="p-8 rounded-2xl glass border border-white/10 hover:border-primary/50 hover:bg-white/10 transition-all text-center cursor-pointer group">
                         <PenTool className="w-8 h-8 text-primary mx-auto mb-4 group-hover:scale-110 transition-transform" />
                         <h3 className="font-bold text-xl">{track}</h3>
@@ -341,7 +341,7 @@ export default function AdminDashboard() {
 
                   {loadingTasks ? <div className="flex justify-center py-10"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div> : (
                     <div className="grid gap-4">
-                      {tasks.filter(t => t.domain.toLowerCase() === manageTaskDomain.toLowerCase() && (!manageTaskTrack || t.technical_type?.toLowerCase() === manageTaskTrack.toLowerCase() || manageTaskTrack.toLowerCase() === "both")).map(task => (
+                      {tasks.filter(t => t.domain.toLowerCase() === manageTaskDomain.toLowerCase() && (!manageTaskTrack || t.technical_type?.toLowerCase() === manageTaskTrack.toLowerCase())).map(task => (
                         <div key={task.id} className="glass p-6 rounded-2xl border border-white/5 flex flex-col md:flex-row gap-6 justify-between items-start">
                           <div>
                             <h3 className="text-xl font-bold mb-2">{task.name}</h3>
@@ -427,8 +427,8 @@ export default function AdminDashboard() {
                 <>
                   <button onClick={() => setViewTaskDomain(null)} className="text-muted-foreground hover:text-white flex items-center gap-2 mb-4"><ChevronRight className="w-4 h-4 rotate-180" /> Back to Domains</button>
                   <h2 className="text-3xl font-bold mb-2">{viewTaskDomain} - Select Track</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-                    {["Frontend", "Backend", "Both"].map(track => (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                    {["Frontend", "Backend"].map(track => (
                       <button key={track} onClick={() => setViewTaskTrack(track)} className="p-8 rounded-2xl glass border border-white/10 hover:border-primary/50 hover:bg-white/10 transition-all text-center cursor-pointer group">
                         <FileText className="w-8 h-8 text-primary mx-auto mb-4 group-hover:scale-110 transition-transform" />
                         <h3 className="font-bold text-xl">{track}</h3>
