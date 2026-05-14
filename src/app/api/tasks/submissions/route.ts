@@ -61,6 +61,15 @@ export async function GET(request: Request) {
     }
 
     if (!taskId) {
+      const isGlobal = searchParams.get("global") === "true";
+      if (isGlobal) {
+        const allSubmissions = await sql`
+          SELECT s.id, s.status, t.domain
+          FROM task_submissions s
+          JOIN task_definitions t ON s.task_id = t.id
+        `;
+        return NextResponse.json(allSubmissions);
+      }
       return NextResponse.json({ error: "Task ID is required for fetching submissions" }, { status: 400 });
     }
 

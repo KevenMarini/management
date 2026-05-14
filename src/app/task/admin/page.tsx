@@ -101,6 +101,7 @@ export default function AdminDashboard() {
   const [viewSelectedTask, setViewSelectedTask] = useState<Task | null>(null);
   const [taskSubmissions, setTaskSubmissions] = useState<any[]>([]);
   const [loadingSubmissions, setLoadingSubmissions] = useState(false);
+  const [allSubmissions, setAllSubmissions] = useState<any[]>([]);
   const [expandedSubmission, setExpandedSubmission] = useState<number | null>(null);
   const [submissionFilter, setSubmissionFilter] = useState<"pending" | "approved" | "rejected">("pending");
 
@@ -115,8 +116,17 @@ export default function AdminDashboard() {
       .then(data => { if (Array.isArray(data)) setRoles(data); })
       .catch(console.error);
 
+
     fetchTasks();
+    fetchAllSubmissions();
   }, []);
+
+  const fetchAllSubmissions = () => {
+    fetch("/api/tasks/submissions?global=true")
+      .then(res => res.json())
+      .then(data => { if (Array.isArray(data)) setAllSubmissions(data); })
+      .catch(console.error);
+  };
 
   const fetchTasks = () => {
     setLoadingTasks(true);
@@ -546,15 +556,44 @@ export default function AdminDashboard() {
                     </h2>
                     <p className="text-muted-foreground mb-8">Select a domain to view applicant submissions.</p>
                   <div className="grid gap-4">
-                    {roles.map(r => (
-                      <div key={r.title} onClick={() => setViewTaskDomain(r.title)} className="p-6 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between group cursor-pointer hover:bg-white/10 hover:border-primary/50 transition-all">
-                        <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center text-purple-400"><Eye className="w-6 h-6" /></div>
-                          <h3 className="font-bold text-xl">{r.title}</h3>
+                    {roles.map(r => {
+                      const domainSubmissions = allSubmissions.filter(s => s.domain === r.title);
+                      const pendingCount = domainSubmissions.filter(s => !s.status || s.status === 'pending').length;
+                      const acceptedCount = domainSubmissions.filter(s => s.status === 'approved').length;
+                      const rejectedCount = domainSubmissions.filter(s => s.status === 'rejected').length;
+                      
+                      const countToDisplay = activeTab === "task_view" ? pendingCount : 
+                                           activeTab === "accepted" ? acceptedCount : rejectedCount;
+                      
+                      const label = activeTab === "task_view" ? "Pending" : 
+                                  activeTab === "accepted" ? "Accepted" : "Rejected";
+                                  
+                      const badgeColor = activeTab === "task_view" ? "bg-amber-500/20 text-amber-400" : 
+                                       activeTab === "accepted" ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400";
+
+                      return (
+                        <div key={r.title} onClick={() => setViewTaskDomain(r.title)} className="p-6 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between group cursor-pointer hover:bg-white/10 hover:border-primary/50 transition-all">
+                          <div className="flex items-center gap-4">
+                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                              activeTab === "task_view" ? "bg-amber-500/20 text-amber-400" :
+                              activeTab === "accepted" ? "bg-green-500/20 text-green-400" :
+                              "bg-red-500/20 text-red-400"
+                            }`}>
+                              {activeTab === "task_view" ? <Eye className="w-6 h-6" /> : 
+                               activeTab === "accepted" ? <CheckCircle2 className="w-6 h-6" /> : <X className="w-6 h-6" />}
+                            </div>
+                            <div>
+                              <h3 className="font-bold text-xl">{r.title}</h3>
+                              <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
+                                <span className={`w-1.5 h-1.5 rounded-full ${activeTab === 'task_view' ? 'bg-amber-500' : activeTab === 'accepted' ? 'bg-green-500' : 'bg-red-500'}`} />
+                                {countToDisplay} {label} Submissions
+                              </p>
+                            </div>
+                          </div>
+                          <ChevronRight className="w-6 h-6 text-muted-foreground group-hover:text-primary group-hover:translate-x-2 transition-all" />
                         </div>
-                        <ChevronRight className="w-6 h-6 text-muted-foreground group-hover:text-primary group-hover:translate-x-2 transition-all" />
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </>
               ) : isDevDomain(viewTaskDomain) && !viewTaskTrack ? (
