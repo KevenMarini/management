@@ -29,10 +29,22 @@ export default function TaskPage() {
   const [verifyEmail, setVerifyEmail] = useState("");
 
   // Dashboard State
-  const [activeTab, setActiveTab] = useState<"applied" | "more" | "tasks">("applied");
+  const [activeTab, setActiveTab] = useState<"profile" | "applied" | "more" | "tasks">("profile");
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [allRoles, setAllRoles] = useState<{title: string, slug: string, description: string}[]>([]);
   const [applyingDomain, setApplyingDomain] = useState<string | null>(null);
+
+  // Additional Profile Details State
+  const [isProfileFilled, setIsProfileFilled] = useState(false);
+  const [profileForm, setProfileForm] = useState({
+    photoLink: "",
+    age: "",
+    dob: "",
+    address: "",
+    resumeLink: "",
+    linkedin: "",
+    github: ""
+  });
 
   useEffect(() => {
     fetch("/api/roles")
@@ -287,6 +299,10 @@ export default function TaskPage() {
                 animate={{ opacity: 1, x: 0 }}
                 className="w-full md:w-64 shrink-0 space-y-2"
               >
+                <button onClick={() => setActiveTab("profile")} className={`w-full flex items-center gap-3 px-4 py-4 rounded-2xl transition-all cursor-pointer ${activeTab === "profile" ? "bg-primary text-primary-foreground font-bold" : "hover:bg-white/5 text-muted-foreground"}`}>
+                  <User className="w-5 h-5" />
+                  {!isProfileFilled ? "Fill Your Details" : "Profile"}
+                </button>
                 <button onClick={() => setActiveTab("applied")} className={`w-full flex items-center gap-3 px-4 py-4 rounded-2xl transition-all cursor-pointer ${activeTab === "applied" ? "bg-primary text-primary-foreground font-bold" : "hover:bg-white/5 text-muted-foreground"}`}>
                   <LayoutList className="w-5 h-5" />
                   Check Applied Domains
@@ -305,6 +321,103 @@ export default function TaskPage() {
               <div className="flex-1 glass rounded-3xl p-8 border border-white/5 min-h-[500px] flex flex-col relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
                 
+                {activeTab === "profile" && (
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col h-full">
+                    <h2 className="text-2xl font-bold mb-6">
+                      {!isProfileFilled ? "Complete Your Profile" : "Your Profile Details"}
+                    </h2>
+                    {!isProfileFilled ? (
+                      <form 
+                        onSubmit={(e) => {
+                          e.preventDefault();
+                          setIsProfileFilled(true);
+                        }} 
+                        className="space-y-4 max-w-2xl"
+                      >
+                        <p className="text-muted-foreground mb-4">Please provide your professional details to proceed with your applications.</p>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium text-muted-foreground">Photo (Google Drive Link)</label>
+                            <input type="url" required value={profileForm.photoLink} onChange={e => setProfileForm({...profileForm, photoLink: e.target.value})} placeholder="https://drive.google.com/..." className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 text-white" />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium text-muted-foreground">Age</label>
+                            <input type="number" required min="16" max="100" value={profileForm.age} onChange={e => setProfileForm({...profileForm, age: e.target.value})} placeholder="e.g. 20" className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 text-white" />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium text-muted-foreground">Date of Birth</label>
+                            <input type="date" required value={profileForm.dob} onChange={e => setProfileForm({...profileForm, dob: e.target.value})} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 text-white [color-scheme:dark]" />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium text-muted-foreground">Resume/Portfolio Link</label>
+                            <input type="url" required value={profileForm.resumeLink} onChange={e => setProfileForm({...profileForm, resumeLink: e.target.value})} placeholder="Google Docs, Portfolio, etc." className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 text-white" />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium text-muted-foreground">LinkedIn Profile</label>
+                            <input type="url" value={profileForm.linkedin} onChange={e => setProfileForm({...profileForm, linkedin: e.target.value})} placeholder="https://linkedin.com/in/..." className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 text-white" />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium text-muted-foreground">GitHub Profile</label>
+                            <input type="url" value={profileForm.github} onChange={e => setProfileForm({...profileForm, github: e.target.value})} placeholder="https://github.com/..." className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 text-white" />
+                          </div>
+                          <div className="space-y-2 md:col-span-2">
+                            <label className="text-sm font-medium text-muted-foreground">Address</label>
+                            <textarea required value={profileForm.address} onChange={e => setProfileForm({...profileForm, address: e.target.value})} rows={3} placeholder="Your full address..." className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 text-white resize-none" />
+                          </div>
+                        </div>
+                        <button type="submit" className="w-full md:w-auto px-8 py-3 mt-6 rounded-xl bg-primary text-primary-foreground font-bold hover:bg-primary/90 transition-colors cursor-pointer">
+                          Save Details
+                        </button>
+                      </form>
+                    ) : (
+                      <div className="space-y-6 max-w-2xl">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div className="p-5 rounded-2xl bg-white/5 border border-white/10">
+                            <p className="text-sm text-muted-foreground mb-1">Age</p>
+                            <p className="font-medium text-lg">{profileForm.age} years old</p>
+                          </div>
+                          <div className="p-5 rounded-2xl bg-white/5 border border-white/10">
+                            <p className="text-sm text-muted-foreground mb-1">Date of Birth</p>
+                            <p className="font-medium text-lg">{profileForm.dob}</p>
+                          </div>
+                          <div className="p-5 rounded-2xl bg-white/5 border border-white/10 md:col-span-2">
+                            <p className="text-sm text-muted-foreground mb-1">Address</p>
+                            <p className="font-medium text-lg">{profileForm.address}</p>
+                          </div>
+                          <div className="p-5 rounded-2xl bg-white/5 border border-white/10">
+                            <p className="text-sm text-muted-foreground mb-1">Resume / Portfolio</p>
+                            <a href={profileForm.resumeLink} target="_blank" rel="noopener noreferrer" className="font-medium text-lg text-primary hover:underline truncate block">
+                              {profileForm.resumeLink}
+                            </a>
+                          </div>
+                          <div className="p-5 rounded-2xl bg-white/5 border border-white/10">
+                            <p className="text-sm text-muted-foreground mb-1">Photo Link</p>
+                            <a href={profileForm.photoLink} target="_blank" rel="noopener noreferrer" className="font-medium text-lg text-primary hover:underline truncate block">
+                              {profileForm.photoLink}
+                            </a>
+                          </div>
+                          {(profileForm.linkedin || profileForm.github) && (
+                            <div className="p-5 rounded-2xl bg-white/5 border border-white/10 md:col-span-2 flex gap-4">
+                              {profileForm.linkedin && (
+                                <a href={profileForm.linkedin} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">LinkedIn</a>
+                              )}
+                              {profileForm.github && (
+                                <a href={profileForm.github} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">GitHub</a>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                        <button 
+                          onClick={() => setIsProfileFilled(false)}
+                          className="px-6 py-2 rounded-xl border border-white/10 hover:bg-white/10 transition-colors cursor-pointer text-sm font-medium"
+                        >
+                          Edit Details
+                        </button>
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+
                 {activeTab === "applied" && (
                   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col h-full">
                     <h2 className="text-2xl font-bold mb-6">Your Applications</h2>
