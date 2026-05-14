@@ -40,7 +40,7 @@ type TaskQuestion = {
 };
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<"applicants" | "tasks" | "task_view">("applicants");
+  const [activeTab, setActiveTab] = useState<"applicants" | "tasks" | "task_view" | "accepted" | "rejected">("applicants");
   
   // Applicants State
   const [applicants, setApplicants] = useState<Applicant[]>([]);
@@ -212,9 +212,29 @@ export default function AdminDashboard() {
           <button onClick={() => { setActiveTab("tasks"); setManageTaskDomain(null); setManageTaskTrack(null); setIsCreatingTask(false); }} className={`w-full flex items-center gap-3 px-4 py-4 rounded-2xl transition-all cursor-pointer ${activeTab === "tasks" ? "bg-primary text-primary-foreground font-bold" : "hover:bg-white/5 text-muted-foreground"}`}>
             <PenTool className="w-5 h-5" /> Manage Tasks
           </button>
-          <button onClick={() => { setActiveTab("task_view"); setViewTaskDomain(null); setViewTaskTrack(null); setViewSelectedTask(null); }} className={`w-full flex items-center gap-3 px-4 py-4 rounded-2xl transition-all cursor-pointer ${activeTab === "task_view" ? "bg-primary text-primary-foreground font-bold" : "hover:bg-white/5 text-muted-foreground"}`}>
-            <Eye className="w-5 h-5" /> Task View
-          </button>
+          <button 
+                onClick={() => { setActiveTab("task_view"); setViewSelectedTask(null); setViewTaskDomain(null); setViewTaskTrack(null); setSubmissionFilter("pending"); }} 
+                className={`w-full p-4 rounded-2xl flex items-center gap-3 transition-all ${activeTab === "task_view" ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20" : "text-muted-foreground hover:bg-white/5"}`}
+              >
+                <Eye className="w-5 h-5" />
+                <span className="font-bold">Task View</span>
+              </button>
+
+              <button 
+                onClick={() => { setActiveTab("accepted"); setViewSelectedTask(null); setViewTaskDomain(null); setViewTaskTrack(null); setSubmissionFilter("approved"); }} 
+                className={`w-full p-4 rounded-2xl flex items-center gap-3 transition-all ${activeTab === "accepted" ? "bg-green-500 text-white shadow-lg shadow-green-500/20" : "text-muted-foreground hover:bg-white/5"}`}
+              >
+                <CheckCircle2 className="w-5 h-5" />
+                <span className="font-bold">Accepted List</span>
+              </button>
+
+              <button 
+                onClick={() => { setActiveTab("rejected"); setViewSelectedTask(null); setViewTaskDomain(null); setViewTaskTrack(null); setSubmissionFilter("rejected"); }} 
+                className={`w-full p-4 rounded-2xl flex items-center gap-3 transition-all ${activeTab === "rejected" ? "bg-red-500 text-white shadow-lg shadow-red-500/20" : "text-muted-foreground hover:bg-white/5"}`}
+              >
+                <X className="w-5 h-5" />
+                <span className="font-bold">Rejected List</span>
+              </button>
         </div>
 
         {/* Content Area */}
@@ -430,13 +450,15 @@ export default function AdminDashboard() {
             </motion.div>
           )}
 
-          {/* TASK VIEW TAB (Submissions) */}
-          {activeTab === "task_view" && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-              {!viewTaskDomain ? (
-                <>
-                  <h2 className="text-3xl font-bold mb-2">View Task Submissions</h2>
-                  <p className="text-muted-foreground mb-6">Select a domain to view answers submitted by applicants.</p>
+          {/* TASK VIEW/ACCEPTED/REJECTED TABS */}
+            {(activeTab === "task_view" || activeTab === "accepted" || activeTab === "rejected") && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col h-full">
+                {!viewTaskDomain ? (
+                  <>
+                    <h2 className="text-3xl font-bold mb-6">
+                      {activeTab === "task_view" ? "Task View (Pending)" : activeTab === "accepted" ? "Accepted Submissions" : "Rejected Submissions"}
+                    </h2>
+                    <p className="text-muted-foreground mb-8">Select a domain to view applicant submissions.</p>
                   <div className="grid gap-4">
                     {roles.map(r => (
                       <div key={r.title} onClick={() => setViewTaskDomain(r.title)} className="p-6 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between group cursor-pointer hover:bg-white/10 hover:border-primary/50 transition-all">
