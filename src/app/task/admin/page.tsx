@@ -92,7 +92,7 @@ export default function AdminDashboard() {
   const [newTaskDesc, setNewTaskDesc] = useState("");
   const [newTaskInst, setNewTaskInst] = useState("");
   const [numQuestions, setNumQuestions] = useState(1);
-  const [questions, setQuestions] = useState<{text: string, type: "text" | "link"}[]>([{text: "", type: "text"}]);
+  const [questions, setQuestions] = useState<{text: string, type: "text" | "link" | "file"}[]>([{text: "", type: "text"}]);
   const [isSubmittingTask, setIsSubmittingTask] = useState(false);
 
   // Task View State
