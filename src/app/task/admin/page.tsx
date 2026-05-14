@@ -769,12 +769,13 @@ export default function AdminDashboard() {
                             </motion.div>
                           )}
                         </AnimatePresence>
-                      </motion.div>
-                  )}
-                </div>
-              )}
-            </motion.div>
-          )}
+                        </motion.div>
+                      ))
+                    )}
+                  </div>
+                )}
+              </motion.div>
+            )}
 
         </div>
       </main>
