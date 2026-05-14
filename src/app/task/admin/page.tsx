@@ -587,11 +587,11 @@ export default function AdminDashboard() {
                               <div className="text-[10px] text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 mt-1">
                                 <span className="flex items-center gap-1.5">
                                   <Users className="w-3 h-3 text-primary" />
-                                  {applicants.filter(a => a.domain === r.title).length} Applicants
+                                  {applicants.filter(a => a.domain === r.title).length} Total Applicants
                                 </span>
-                                <span className="flex items-center gap-1.5">
-                                  <span className={`w-1.5 h-1.5 rounded-full ${activeTab === 'task_view' ? 'bg-amber-500' : activeTab === 'accepted' ? 'bg-green-500' : 'bg-red-500'}`} />
-                                  {countToDisplay} {label}
+                                <span className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full ${badgeColor}`}>
+                                  <span className={`w-1 h-1 rounded-full ${activeTab === 'task_view' ? 'bg-amber-500' : activeTab === 'accepted' ? 'bg-green-500' : 'bg-red-500'}`} />
+                                  {countToDisplay} {label} Submissions
                                 </span>
                               </div>
                             </div>
