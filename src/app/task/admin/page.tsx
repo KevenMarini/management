@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Loader2, Users, Calendar, Mail, Phone, Briefcase, ExternalLink, ChevronDown, ChevronUp, CheckCircle2, User, Trash2, LayoutList, PlusCircle, PenTool, Link2, FileText, ChevronRight, Eye, X } from "lucide-react";
+import { Search, Loader2, Users, Calendar, Mail, Phone, Briefcase, ExternalLink, ChevronDown, ChevronUp, CheckCircle2, User, Trash2, LayoutList, PlusCircle, PenTool, Link2, FileText, ChevronRight, Eye, X, Lock } from "lucide-react";
 
 type Applicant = {
   id: number;
@@ -41,6 +41,37 @@ type TaskQuestion = {
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<"applicants" | "tasks" | "task_view" | "accepted" | "rejected">("applicants");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [loginUsername, setLoginUsername] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+
+  useEffect(() => {
+    const loggedIn = sessionStorage.getItem("task_admin_logged_in") === "true";
+    if (loggedIn) setIsLoggedIn(true);
+  }, []);
+
+  const handleAdminLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoggingIn(true);
+    try {
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: loginUsername, password: loginPassword })
+      });
+      if (res.ok) {
+        sessionStorage.setItem("task_admin_logged_in", "true");
+        setIsLoggedIn(true);
+      } else {
+        alert("Invalid credentials");
+      }
+    } catch (err) {
+      alert("Login failed");
+    } finally {
+      setIsLoggingIn(false);
+    }
+  };
   
   // Applicants State
   const [applicants, setApplicants] = useState<Applicant[]>([]);
@@ -197,6 +228,57 @@ export default function AdminDashboard() {
   );
 
   const isDevDomain = (domain: string) => domain.toLowerCase().includes("develop") || domain.toLowerCase() === "technical";
+
+  if (!isLoggedIn) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
+        <Navbar showAdmin={false} />
+        <div className="w-full max-w-md space-y-8 animate-in slide-in-from-bottom duration-500 pt-20">
+          <div className="text-center space-y-2">
+            <h1 className="text-3xl font-bold tracking-tight">Task Admin Portal</h1>
+            <p className="text-muted-foreground">Authorized access only</p>
+          </div>
+          <div className="glass rounded-2xl p-8 shadow-2xl border border-white/5">
+            <form onSubmit={handleAdminLogin} className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-sm font-medium flex items-center gap-2 text-white/70">
+                  <User className="w-4 h-4 text-primary" /> Username
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter username"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-white"
+                  value={loginUsername}
+                  onChange={(e) => setLoginUsername(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium flex items-center gap-2 text-white/70">
+                  <Lock className="w-4 h-4 text-primary" /> Password
+                </label>
+                <input
+                  type="password"
+                  placeholder="Enter password"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-white"
+                  value={loginPassword}
+                  onChange={(e) => setLoginPassword(e.target.value)}
+                  required
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={isLoggingIn}
+                className="w-full bg-primary text-primary-foreground font-bold py-3 rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:scale-100 flex items-center justify-center gap-2"
+              >
+                {isLoggingIn ? <Loader2 className="w-5 h-5 animate-spin" /> : "Sign In"}
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen text-foreground bg-background selection:bg-primary/30 selection:text-primary flex flex-col">
