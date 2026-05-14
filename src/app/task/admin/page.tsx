@@ -96,13 +96,14 @@ export default function AdminDashboard() {
 
   const fetchSubmissions = (taskId: number) => {
     setLoadingSubmissions(true);
-    fetch("/api/tasks/submissions?taskId=" + taskId)
+    fetch(`/api/tasks/submissions?taskId=${taskId}&t=${Date.now()}`)
       .then(r => r.json())
       .then(data => {
         if (Array.isArray(data)) setTaskSubmissions(data);
+        else setTaskSubmissions([]); // ensure we clear it if there's an error
         setLoadingSubmissions(false);
       })
-      .catch(err => { console.error(err); setLoadingSubmissions(false); });
+      .catch(err => { console.error(err); setTaskSubmissions([]); setLoadingSubmissions(false); });
   };
 
   const handleDeleteApplicant = async (id: number, e: React.MouseEvent) => {
