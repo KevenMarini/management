@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import { motion, AnimatePresence } from "framer-motion";
-import { LogIn, Loader2, CheckCircle2, User, Phone, Mail, Menu, X, PlusCircle, LayoutList, ListTodo, Briefcase, ChevronRight } from "lucide-react";
+import { LogIn, Loader2, CheckCircle2, User, Phone, Mail, Menu, X, PlusCircle, LayoutList, ListTodo, Briefcase, ChevronRight, PenTool } from "lucide-react";
 
 export default function TaskPage() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
