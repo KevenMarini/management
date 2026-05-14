@@ -39,6 +39,7 @@ export default function LandingPage() {
     el.addEventListener('scroll', handleScroll);
     return () => el.removeEventListener('scroll', handleScroll);
   }, [roles]);
+  useEffect(() => {
     const fetchRoles = async () => {
       try {
         const res = await fetch("/api/roles");
