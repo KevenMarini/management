@@ -21,6 +21,7 @@ export default function TaskPage() {
     email: string;
     phone: string;
     domains: string[];
+    profileDetails?: any;
   } | null>(null);
 
   // Verification Form State
@@ -76,6 +77,12 @@ export default function TaskPage() {
       }
 
       setProfile(data);
+      if (data.profileDetails) {
+        setProfileForm(data.profileDetails);
+        if (data.profileDetails.photoLink || data.profileDetails.age) {
+          setIsProfileFilled(true);
+        }
+      }
       setVerifyName(data.name);
       setVerifyPhone(data.phone);
       setVerifyEmail(data.email);
@@ -328,9 +335,20 @@ export default function TaskPage() {
                     </h2>
                     {!isProfileFilled ? (
                       <form 
-                        onSubmit={(e) => {
+                        onSubmit={async (e) => {
                           e.preventDefault();
-                          setIsProfileFilled(true);
+                          try {
+                            const res = await fetch("/api/update-profile", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ userid, password, ...profileForm })
+                            });
+                            const data = await res.json();
+                            if (!res.ok) throw new Error(data.error || "Failed to update profile");
+                            setIsProfileFilled(true);
+                          } catch (err: any) {
+                            alert(err.message);
+                          }
                         }} 
                         className="space-y-4 max-w-2xl"
                       >

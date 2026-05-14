@@ -37,7 +37,16 @@ export async function POST(request: Request) {
       firstName: firstName,
       email: applicants.length > 0 ? applicants[0].email : user.email,
       phone: applicants.length > 0 ? applicants[0].phone : user.phone,
-      domains: uniqueDomains.length > 0 ? uniqueDomains : ["Unknown"]
+      domains: uniqueDomains.length > 0 ? uniqueDomains : ["Unknown"],
+      profileDetails: {
+        photoLink: user.photo_link || "",
+        age: user.age || "",
+        dob: user.dob || "",
+        resumeLink: user.resume_link || "",
+        linkedin: user.linkedin || "",
+        github: user.github || "",
+        address: user.address || ""
+      }
     });
   } catch (error: any) {
     console.error("Login error:", error);

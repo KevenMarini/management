@@ -32,9 +32,25 @@ export async function GET() {
         password VARCHAR(255) NOT NULL,
         email VARCHAR(255) UNIQUE NOT NULL,
         phone VARCHAR(20) UNIQUE NOT NULL,
+        photo_link VARCHAR(255),
+        age VARCHAR(10),
+        dob VARCHAR(50),
+        resume_link VARCHAR(255),
+        linkedin VARCHAR(255),
+        github VARCHAR(255),
+        address TEXT,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       )
     `;
+
+    // 4.5 Add new columns to users table if they don't exist
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS photo_link VARCHAR(255)`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS age VARCHAR(10)`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS dob VARCHAR(50)`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS resume_link VARCHAR(255)`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS linkedin VARCHAR(255)`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS github VARCHAR(255)`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS address TEXT`;
 
     // 5. Create admin_logs table
     await sql`
