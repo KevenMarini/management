@@ -64,7 +64,8 @@ export async function GET(request: Request) {
 
     // Fetch all submissions for a specific task
     const submissions = await sql`
-      SELECT s.id as submission_id, s.created_at, u.userid, u.name as user_name
+      SELECT s.id as submission_id, s.created_at, u.userid, 
+             (SELECT a.name FROM applicants a WHERE a.email = u.email ORDER BY a.created_at ASC LIMIT 1) as user_name
       FROM task_submissions s
       JOIN users u ON s.userid = u.userid
       WHERE s.task_id = ${taskId}
